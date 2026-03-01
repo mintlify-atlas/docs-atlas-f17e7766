@@ -1,0 +1,121 @@
+{
+  "projectType": "saas",
+  "projectName": "Loop",
+  "projectDescription": "Elegant window management for macOS with radial menus, keyboard shortcuts, and extensive customization.",
+  "theme": "palm",
+  "primaryColor": "#7C3AED",
+  "lightColor": "#A78BFA",
+  "darkColor": "#6D28D9",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "introduction",
+              "features",
+              "comparison"
+            ]
+          },
+          {
+            "group": "Getting Started",
+            "pages": [
+              "getting-started/installation",
+              "getting-started/quickstart",
+              "getting-started/trigger-key"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/radial-menu",
+              "features/keyboard-shortcuts",
+              "features/cycles",
+              "features/stash",
+              "features/preview",
+              "features/theming"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/settings",
+              "configuration/custom-actions",
+              "configuration/keybinds",
+              "configuration/behavior"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/url-scheme",
+              "advanced/applescript",
+              "advanced/scripting-examples"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Window Actions",
+            "pages": [
+              "api/window-directions",
+              "api/general-actions",
+              "api/halves-quarters",
+              "api/thirds-fourths",
+              "api/screen-switching",
+              "api/size-adjustment",
+              "api/focus-actions"
+            ]
+          },
+          {
+            "group": "Automation",
+            "pages": [
+              "api/url-commands",
+              "api/applescript-reference"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Contributing",
+        "groups": [
+          {
+            "group": "Development",
+            "pages": [
+              "contributing/overview",
+              "contributing/setup",
+              "contributing/code-guidelines",
+              "contributing/localization"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Radial menu for intuitive window positioning",
+    "Extensive keyboard shortcut support",
+    "Action cycles for sequential operations",
+    "Stash feature to hide windows at screen edges",
+    "Live preview before committing actions",
+    "Full theming and customization options",
+    "Custom window frames and positions",
+    "Multi-screen support",
+    "URL scheme and AppleScript automation"
+  ],
+  "publicApiSurface": [
+    "loop://direction/<direction> - Position windows by direction",
+    "loop://action/<action> - Execute window actions",
+    "loop://screen/<command> - Multi-screen management",
+    "loop://keybind/<name> - Execute custom keybinds",
+    "loop://list/<type> - List available commands",
+    "WindowDirection enum - All positioning options",
+    "WindowAction struct - Custom action definitions",
+    "AppleScript integration for automation"
+  ]
+}

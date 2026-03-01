@@ -1,0 +1,253 @@
+---
+title: Settings Overview
+description: Configure Loop's behavior, appearance, and window management options
+---
+
+Loop provides a comprehensive settings window to customize your window management experience. Access settings by clicking the Loop icon in the menu bar and selecting **Settings**, or use the keyboard shortcut `⌘,` when Loop is active.
+
+## Settings Organization
+
+The settings window is organized into three main sections:
+
+### Theming
+
+Customize Loop's visual appearance:
+
+- **Icon** - Choose from multiple app icon styles and unlock special icons by using Loop
+- **Accent Color** - Set custom colors and gradients for Loop's UI elements
+- **Radial Menu** - Configure the radial menu's appearance, thickness, and corner radius
+- **Preview** - Adjust preview window styling, padding, border thickness, and blur effects
+
+### Settings
+
+Configure Loop's core functionality:
+
+- **[Behavior](/configuration/behavior)** - General app behavior, window interaction, and mouse settings
+- **[Keybinds](/configuration/keybinds)** - Set up keyboard shortcuts and trigger key configuration
+
+### Loop
+
+Advanced options and app information:
+
+- **Advanced** - System window manager integration, animation settings, and size increments
+- **Excluded Apps** - Define which applications Loop should ignore
+- **About** - Version information, updates, and contributors
+
+## General Settings
+
+### Launch Behavior
+
+**Launch at login**  
+Automatically start Loop when you log in to macOS.
+
+```swift
+Defaults[.launchAtLogin] // Default: false
+```
+
+**Start hidden**  
+Launch Loop without showing any windows or notifications.
+
+```swift
+Defaults[.startHidden] // Default: false
+```
+
+**Hide menu bar icon**  
+Remove Loop's icon from the macOS menu bar (you can still access Loop via keyboard shortcuts).
+
+```swift
+Defaults[.hideMenuBarIcon] // Default: false
+```
+
+### Animation Speed
+
+Control how quickly windows animate when being resized or moved:
+
+- **Off** - Instant window positioning with no animation
+- **Reduce Motion** - Minimal animation respecting accessibility settings
+- **Fast** - Quick animations
+- **Snappy** (Default) - Balanced speed and smoothness
+- **Smooth** - Slower, more fluid animations
+
+```swift
+Defaults[.animationConfiguration] // Default: .snappy
+```
+
+## Window Settings
+
+**Move window to cursor's screen**  
+When enabled, windows will move to the screen where your cursor is located.
+
+```swift
+Defaults[.useScreenWithCursor] // Default: true
+```
+
+**Restore window frame on drag**  
+When dragging a window that has been resized by Loop, restore its original size and position.
+
+```swift
+Defaults[.restoreWindowFrameOnDrag] // Default: false
+```
+
+**Padding**  
+Configure screen edges and window gaps. See [Padding Configuration](#padding-configuration) below.
+
+## Cursor Settings
+
+**Move cursor with window**  
+Automatically move your cursor to follow the window when it's resized or repositioned. Only available when preview is enabled.
+
+```swift
+Defaults[.moveCursorWithWindow] // Default: false
+```
+
+**Resize window under cursor**  
+Apply window actions to the window currently under your cursor instead of the focused window.
+
+```swift
+Defaults[.resizeWindowUnderCursor] // Default: false
+```
+
+**Focus window on resize**  
+Bring the window under the cursor to focus when resizing it.
+
+```swift
+Defaults[.focusWindowOnResize] // Default: true
+```
+
+## Window Snapping
+
+**Enable window snapping**  
+Snap windows to screen edges and other windows when dragging them.
+
+```swift
+Defaults[.windowSnapping] // Default: false
+```
+
+**Suppress Mission Control**  
+Prevent Mission Control from opening when dragging windows to the top of the screen.
+
+```swift
+Defaults[.suppressMissionControlOnTopDrag] // Default: true
+```
+
+<Note>
+  On macOS 15+, if macOS's "Tile by dragging windows to screen edges" feature is enabled, it will conflict with Loop's window snapping functionality.
+</Note>
+
+## Stage Manager
+
+**Respect Stage Manager**  
+When Stage Manager is active, Loop will account for the stage strip when resizing windows.
+
+```swift
+Defaults[.respectStageManager] // Default: true
+```
+
+**Stage strip size**  
+Define the width of the Stage Manager strip (50-250px).
+
+```swift
+Defaults[.stageStripSize] // Default: 150px
+```
+
+## Stash Settings
+
+The Stash feature lets you temporarily hide windows to the edge of the screen.
+
+**Animated**  
+Animate windows when stashing and unstashing them.
+
+```swift
+Defaults[.animateStashedWindows] // Default: true
+```
+
+**Peek size**  
+Set how much of the stashed window remains visible at the screen edge (1-200px).
+
+```swift
+Defaults[.stashedWindowVisiblePadding] // Default: 20px
+```
+
+**Shift focus when stashed**  
+Automatically focus another window when the current window is stashed.
+
+```swift
+Defaults[.shiftFocusWhenStashed] // Default: true
+```
+
+## Padding Configuration
+
+Loop allows you to configure padding to add space around windows when they're resized. Access padding settings from **Settings → Behavior → Padding → Configure**.
+
+### Simple Mode
+
+Apply uniform padding on all sides:
+
+- **Padding** - Set the same padding value for all edges (0-100px)
+
+### Custom Mode
+
+Configure individual padding for each screen edge:
+
+- **Top** - Padding from the top edge
+- **Bottom** - Padding from the bottom edge
+- **Right** - Padding from the right edge
+- **Left** - Padding from the left edge
+- **Window gaps** - Space between adjacent windows
+- **External bar** - Additional top padding for custom menu bars
+
+```swift
+Defaults[.enablePadding] // Default: false
+Defaults[.padding] // Default: .zero
+```
+
+### Hidden Padding Settings
+
+Advanced padding options configurable via terminal:
+
+**Minimum screen size**  
+Only apply padding on screens larger than this diagonal size (in inches):
+
+```bash
+defaults write com.MrKai77.Loop paddingMinimumScreenSize -float 24
+```
+
+**Ignore notch**  
+Ignore the notch height when calculating top padding:
+
+```bash
+defaults write com.MrKai77.Loop ignoreNotch -bool true
+```
+
+## Advanced Settings
+
+**Use system window manager when available**  
+On macOS 15+, use the native window management APIs instead of Loop's custom implementation.
+
+```swift
+Defaults[.useSystemWindowManagerWhenAvailable] // Default: false
+```
+
+**Haptic feedback**  
+Enable haptic feedback when performing window actions.
+
+```swift
+Defaults[.hapticFeedback] // Default: true
+```
+
+**Size increment**  
+The amount (in pixels) to grow or shrink windows when using size adjustment actions.
+
+```swift
+Defaults[.sizeIncrement] // Default: 20px
+```
+
+## Accessing Settings Programmatically
+
+Loop uses the [Defaults](https://github.com/sindresorhus/Defaults) library for settings management. All settings are defined in:
+
+```
+source/Loop/Extensions/Defaults+Extensions.swift
+```
+
+Settings are organized into categories and support iCloud sync where appropriate.

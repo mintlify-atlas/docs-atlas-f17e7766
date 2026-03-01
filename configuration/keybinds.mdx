@@ -1,0 +1,407 @@
+---
+title: Keyboard Shortcuts
+description: Configure keyboard shortcuts and trigger keys for window management
+---
+
+Loop's keyboard shortcuts system allows you to resize and move windows without touching your mouse. You can assign custom keybinds to any window action and configure how the trigger key behaves.
+
+## Trigger Key
+
+The **trigger key** is the modifier key you hold down to activate Loop. By default, Loop uses the **Fn** (Function) key.
+
+```swift
+Defaults[.triggerKey] // Default: [.kVK_Function]
+```
+
+You can change the trigger key to any modifier key or combination:
+
+- **Fn** (Function)
+- **Control** (⌃)
+- **Option** (⌥)
+- **Command** (⌘)
+- **Shift** (⇧)
+- Any combination of modifier keys
+
+### Setting the Trigger Key
+
+1. Open **Settings → Keybinds**
+2. Click on the **Trigger Key** field
+3. Press the key(s) you want to use
+4. The trigger key is immediately active
+
+## Trigger Key Settings
+
+### Treat Left and Right Keys Differently
+
+When enabled, Loop distinguishes between left and right modifier keys:
+
+```swift
+Defaults[.sideDependentTriggerKey] // Default: true
+```
+
+**Example**: You can set the trigger to right Command only, leaving left Command for normal macOS shortcuts.
+
+### Trigger Delay
+
+Add a delay (in seconds) before the trigger key activates Loop:
+
+```swift
+Defaults[.triggerDelay] // Default: 0 (disabled)
+```
+
+**Range**: 0.0 to 1.0 seconds, adjustable in 0.1s increments
+
+**Use case**: Prevent accidental activation when you're just holding down the modifier key for other shortcuts.
+
+### Double-Click to Trigger
+
+Require double-clicking the trigger key to activate Loop:
+
+```swift
+Defaults[.doubleClickToTrigger] // Default: false
+```
+
+This prevents accidental activation and is useful if you've mapped Loop to a commonly-used modifier key.
+
+### Middle-Click to Trigger
+
+Activate Loop by middle-clicking on a window:
+
+```swift
+Defaults[.middleClickTriggersLoop] // Default: false
+```
+
+When enabled, you can middle-click any window to open Loop's radial menu on that window.
+
+**Apply trigger delay on middle-click**  
+Use the trigger delay setting for middle-click activation:
+
+```swift
+Defaults[.enableTriggerDelayOnMiddleClick] // Default: false
+```
+
+Only visible when both middle-click trigger and trigger delay are enabled.
+
+## Keybind Configuration
+
+Keybinds are custom keyboard shortcuts that trigger specific window actions. Access keybind configuration in **Settings → Keybinds**.
+
+### Adding a Keybind
+
+1. Click the **Add** button
+2. Select the window action from the dropdown
+3. Click the keybind field
+4. Press your desired key combination
+5. Optionally name the action
+
+### Keybind Format
+
+Keybinds use the trigger key plus additional keys:
+
+**Format**: `Trigger Key + Key(s)`
+
+**Examples**:
+- `Fn + H` → Left Half
+- `Fn + L` → Right Half  
+- `Fn + K` → Top Half
+- `Fn + J` → Bottom Half
+- `Fn + F` → Fullscreen
+- `Fn + M` → Maximize
+- `Fn + C` → Center
+
+The trigger key is always required and automatically included.
+
+### Removing Keybinds
+
+1. Select one or more keybinds in the list
+2. Click **Remove** or press `Delete`
+
+### Keybind Storage
+
+Keybinds are stored as an array of `WindowAction` objects:
+
+```swift
+Defaults[.keybinds] // Default: WindowAction.defaultKeybinds
+```
+
+Defined in `source/Loop/Extensions/Defaults+Extensions.swift:71`
+
+## Available Actions
+
+You can assign keybinds to any of the following action categories:
+
+### General
+
+- Fullscreen
+- Maximize
+- Almost Maximize
+- Maximize Height
+- Maximize Width
+- Fill Available Space
+- Center
+- MacOS Center
+- Minimize
+- Minimize Others
+- Hide
+
+### Halves
+
+- Top Half
+- Bottom Half
+- Left Half
+- Right Half
+- Horizontal Center Half
+- Vertical Center Half
+
+### Quarters
+
+- Top Left Quarter
+- Top Right Quarter
+- Bottom Left Quarter
+- Bottom Right Quarter
+
+### Horizontal Thirds
+
+- Right Third
+- Right Two Thirds
+- Horizontal Center Third
+- Left Two Thirds
+- Left Third
+
+### Vertical Thirds
+
+- Top Third
+- Top Two Thirds
+- Vertical Center Third
+- Bottom Two Thirds
+- Bottom Third
+
+### Horizontal Fourths
+
+- First Fourth
+- Second Fourth
+- Third Fourth
+- Fourth Fourth
+- Left Three Fourths
+- Right Three Fourths
+
+### Screen Switching
+
+- Next Screen
+- Previous Screen
+- Left Screen
+- Right Screen
+- Top Screen
+- Bottom Screen
+
+### Size Adjustment
+
+- Larger
+- Smaller
+- Scale Up
+- Scale Down
+
+### Shrink
+
+- Shrink Top
+- Shrink Bottom
+- Shrink Right
+- Shrink Left
+- Shrink Horizontal
+- Shrink Vertical
+
+### Grow
+
+- Grow Top
+- Grow Bottom
+- Grow Right
+- Grow Left
+- Grow Horizontal
+- Grow Vertical
+
+### Move
+
+- Move Up
+- Move Down
+- Move Right
+- Move Left
+
+### Focus
+
+- Focus Up
+- Focus Down
+- Focus Right
+- Focus Left
+- Focus Next in Stack
+
+### Stash
+
+- Stash
+- Unstash
+
+### More
+
+- Initial Frame (restore original size)
+- Undo (undo last action)
+- [Custom](/configuration/custom-actions) (create custom positions)
+- Cycle (cycle through multiple actions)
+
+Action categories defined in `source/Loop/Window Management/Window Action/WindowDirection.swift:75`
+
+## Cycles
+
+Cycle actions allow you to rotate through multiple window positions with the same keybind.
+
+### Creating a Cycle
+
+1. Add a new keybind
+2. Select **Cycle** as the action type
+3. Choose which actions to include in the cycle
+4. Assign a keyboard shortcut
+5. Name your cycle (e.g., "Work Layout Cycle")
+
+### Cycle Behavior
+
+**Always start cycles from first item**  
+Reset to the first action in the cycle instead of resuming from where you left off:
+
+```swift
+Defaults[.cycleModeRestartEnabled] // Default: false
+```
+
+By default, Loop remembers which action in the cycle you last used for each window.
+
+**Cycle backward with Shift**  
+Hold Shift while triggering a cycle to go backwards through the actions:
+
+```swift
+Defaults[.cycleBackwardsOnShiftPressed] // Default: true
+```
+
+<Note>
+  This option is only available when Shift is not part of your trigger key.
+</Note>
+
+### Example Cycles
+
+**Multi-Monitor Cycle**
+1. Left half on current screen
+2. Right half on current screen
+3. Maximize on next screen
+
+**Reading Layout Cycle**  
+1. Left two-thirds
+2. Center
+3. Right two-thirds
+
+**Focus Cycle**
+1. Center at 80% size
+2. Maximize
+3. Almost maximize
+
+## Bypass Trigger Key
+
+Individual actions can bypass the trigger key requirement:
+
+```swift
+var bypassTriggerKey: Bool?  // Optional override
+```
+
+When set to `true`, the action will execute immediately when you press just the keybind, without holding the trigger key.
+
+## Repeating Actions
+
+Certain actions can be repeated by holding down the keybind:
+
+```swift
+var canRepeat: Bool {
+    willManipulateExistingWindowFrame || 
+    direction.willFocusWindow || 
+    direction == .undo
+}
+```
+
+From `source/Loop/Window Management/Window Action/WindowAction.swift:159`
+
+**Repeatable actions**:
+- Size adjustments (larger, smaller, grow, shrink)
+- Move actions
+- Focus actions  
+- Undo
+
+Hold down `Trigger Key + Keybind` to repeatedly apply the action.
+
+## Default Keybinds
+
+Loop ships with a set of default keybinds for common actions. These are defined in:
+
+```
+source/Loop/Window Management/Window Action/WindowAction+Defaults.swift
+```
+
+You can reset to defaults or customize them to match your workflow.
+
+## Hidden Trigger Settings
+
+### Trigger Key Timeout
+
+Automatically close Loop if no action is taken within a specified time:
+
+```bash
+defaults write com.MrKai77.Loop triggerKeyTimeout -float 3.0
+```
+
+Set to `0` (default) to disable. Time is in seconds.
+
+Reset with:
+```bash
+defaults delete com.MrKai77.Loop triggerKeyTimeout
+```
+
+## Best Practices
+
+### Ergonomic Keybinds
+
+Assign frequently-used actions to easily accessible keys:
+
+- Use home row keys (A, S, D, F, J, K, L) for primary actions
+- Reserve number keys for specific layouts
+- Use arrow keys for directional actions
+
+### Logical Grouping
+
+Group related actions together:
+
+- **H/J/K/L** - Vim-style directional movement
+- **1/2/3** - Different monitor layouts
+- **Q/W/E** - Quarter positions
+
+### Avoid Conflicts
+
+Ensure your keybinds don't conflict with:
+
+- System shortcuts
+- Application-specific shortcuts
+- Other utility apps
+
+### Use Descriptive Names
+
+Name custom actions and cycles clearly:
+
+- ✅ "Code Editor Layout"
+- ✅ "Meeting Notes Position"  
+- ❌ "Custom 1"
+- ❌ "Cycle 2"
+
+## Keybind Preview
+
+When you select a keybind in the settings, Loop shows a live preview of what the action will do. This helps you verify the action before saving.
+
+```swift
+if model.selectedKeybinds.count == 1, let action = model.selectedKeybinds.first {
+    windowModel.isPreviewingUserSelection = true
+    windowModel.setPreviewedAction(to: action)
+}
+```
+
+From `source/Loop/Settings Window/Settings/Keybinds/KeybindsConfigurationView.swift:167`

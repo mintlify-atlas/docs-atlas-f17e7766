@@ -1,0 +1,418 @@
+---
+title: Behavior Configuration
+description: Configure Loop's window interaction, mouse behavior, and preview settings
+---
+
+The Behavior settings control how Loop interacts with windows, responds to mouse input, and displays previews. Access these settings in **Settings → Behavior**.
+
+## General Behavior
+
+### Launch Settings
+
+**Launch at login**  
+Start Loop automatically when you log in to macOS.
+
+```swift
+Defaults[.launchAtLogin] // Default: false
+```
+
+**Start hidden**  
+Launch Loop in the background without showing any windows or notifications.
+
+```swift
+Defaults[.startHidden] // Default: false
+```
+
+**Hide menu bar icon**  
+Remove Loop's icon from the macOS menu bar. You can still access Loop via keyboard shortcuts.
+
+```swift
+Defaults[.hideMenuBarIcon] // Default: false
+```
+
+<Warning>
+  If you hide the menu bar icon, make sure you have keyboard shortcuts configured to access Loop's settings.
+</Warning>
+
+### Animation Speed
+
+Control the speed of window resize and move animations:
+
+```swift
+enum AnimationConfiguration {
+    case off           // No animation
+    case reduceMotion  // Minimal animation
+    case fast
+    case snappy        // Default
+    case smooth
+}
+```
+
+```swift
+Defaults[.animationConfiguration] // Default: .snappy
+```
+
+The animation configuration affects:
+- Window resizing animations
+- Window movement transitions
+- Preview window animations
+- Radial menu animations
+
+From `source/Loop/Settings Window/Settings/Behavior/BehaviorConfiguration.swift:18`
+
+## Window Behavior
+
+### Screen Selection
+
+**Move window to cursor's screen**  
+When enabled, windows will move to the screen where your cursor is currently located when you trigger a window action.
+
+```swift
+Defaults[.useScreenWithCursor] // Default: true
+```
+
+This is particularly useful in multi-monitor setups where you want windows to follow your cursor rather than staying on their current screen.
+
+### Window Dragging
+
+**Restore window frame on drag**  
+When you drag a window that has been resized by Loop, restore its original size and position.
+
+```swift
+Defaults[.restoreWindowFrameOnDrag] // Default: false
+```
+
+**Use case**: After resizing a window to half-screen, dragging it will return it to its original size and position.
+
+<Note>
+  This setting is disabled when the system window manager is enabled, as macOS handles window restoration differently.
+</Note>
+
+### Padding Configuration
+
+Configure spacing around windows when they're resized. Click the **Configure** button to open the padding settings modal.
+
+**Apply padding**  
+Enable or disable padding globally:
+
+```swift
+Defaults[.enablePadding] // Default: false
+```
+
+**Padding modes**:
+
+**Simple Mode**  
+Apply the same padding value to all edges:
+
+```swift
+Defaults[.padding].window // Uniform padding in pixels
+```
+
+**Custom Mode**  
+Set individual padding for each edge:
+
+```swift
+struct PaddingConfiguration {
+    var top: CGFloat
+    var bottom: CGFloat
+    var right: CGFloat
+    var left: CGFloat
+    var window: CGFloat      // Gap between windows
+    var externalBar: CGFloat // Additional top padding for custom menu bars
+    var configureScreenPadding: Bool
+}
+```
+
+From `source/Loop/Settings Window/Settings/Behavior/Padding Configuration/PaddingConfigurationView.swift:17`
+
+**Range**: 0-100 pixels per edge
+
+### Advanced Padding Options
+
+Several hidden settings are available via terminal commands:
+
+**Minimum screen size**  
+Only apply padding on screens larger than the specified diagonal size (in inches):
+
+```bash
+defaults write com.MrKai77.Loop paddingMinimumScreenSize -float 27
+```
+
+**Ignore notch**  
+Ignore the notch height when calculating top padding on MacBooks:
+
+```bash
+defaults write com.MrKai77.Loop ignoreNotch -bool true
+```
+
+This ensures consistent padding distances across devices with and without notches.
+
+## Cursor Behavior
+
+### Cursor Movement
+
+**Move cursor with window**  
+Automatically reposition your cursor when a window is resized or moved.
+
+```swift
+Defaults[.moveCursorWithWindow] // Default: false
+```
+
+<Note>
+  This option is only available when **preview visibility** is enabled. When the preview is disabled, the window moves live with cursor movement, making cursor repositioning impractical.
+</Note>
+
+### Window Under Cursor
+
+**Resize window under cursor**  
+Apply window actions to the window currently under your cursor instead of the focused window.
+
+```swift
+Defaults[.resizeWindowUnderCursor] // Default: false
+```
+
+This is useful for quickly resizing background windows without switching focus.
+
+**Focus window on resize**  
+Bring the window under the cursor to the front when resizing it:
+
+```swift
+Defaults[.focusWindowOnResize] // Default: true
+```
+
+<Note>
+  When the system window manager is enabled, the window under the cursor must be focused for the action to work.
+</Note>
+
+From `source/Loop/Settings Window/Settings/Behavior/BehaviorConfiguration.swift:104`
+
+## Window Snapping
+
+**Enable window snapping**  
+Snap windows to screen edges and other windows when dragging them.
+
+```swift
+Defaults[.windowSnapping] // Default: false
+```
+
+When enabled, windows will snap into position when dragged near:
+- Screen edges
+- Other window edges
+- Common layout positions (halves, quarters)
+
+**Snap threshold**  
+Distance in points at which snapping occurs (hidden setting):
+
+```bash
+defaults write com.MrKai77.Loop snapThreshold -float 5.0
+```
+
+Default: 2.0 points
+
+### Mission Control Integration
+
+**Suppress Mission Control**  
+Prevent Mission Control from opening when dragging windows to the top of the screen:
+
+```swift
+Defaults[.suppressMissionControlOnTopDrag] // Default: true
+```
+
+<Warning>
+  On macOS 15+, if macOS's "Tile by dragging windows to screen edges" feature is enabled in System Settings, it will conflict with Loop's window snapping functionality. Loop will show a warning indicator when this conflict is detected.
+</Warning>
+
+From `source/Loop/Settings Window/Settings/Behavior/BehaviorConfiguration.swift:114`
+
+## Stage Manager
+
+Loop integrates with macOS Stage Manager to ensure proper window placement.
+
+**Respect Stage Manager**  
+When Stage Manager is active, Loop accounts for the stage strip when calculating window positions:
+
+```swift
+Defaults[.respectStageManager] // Default: true
+```
+
+**Stage strip size**  
+Customize the width of the Stage Manager strip:
+
+```swift
+Defaults[.stageStripSize] // Default: 150px
+```
+
+**Range**: 50-250 pixels
+
+Adjust this if you've customized your Stage Manager appearance or if Loop's calculations don't match the actual strip size.
+
+From `source/Loop/Settings Window/Settings/Behavior/BehaviorConfiguration.swift:147`
+
+## Stash Behavior
+
+The Stash feature allows you to temporarily hide windows to screen edges. Configure how stashed windows behave:
+
+**Animated**  
+Animate windows when stashing and unstashing:
+
+```swift
+Defaults[.animateStashedWindows] // Default: true
+```
+
+Disable for instant stashing with no animation.
+
+**Peek size**  
+Set how much of the stashed window remains visible at the screen edge:
+
+```swift
+Defaults[.stashedWindowVisiblePadding] // Default: 20px
+```
+
+**Range**: 1-200 pixels
+
+A larger peek size makes it easier to see and retrieve stashed windows, while a smaller size maximizes screen space.
+
+**Shift focus when stashed**  
+Automatically focus another window when the current window is stashed:
+
+```swift
+Defaults[.shiftFocusWhenStashed] // Default: true
+```
+
+When disabled, no window will be focused after stashing, leaving you at the desktop.
+
+From `source/Loop/Settings Window/Settings/Behavior/BehaviorConfiguration.swift:160`
+
+## Preview Behavior
+
+Preview settings are configured in the **Preview** tab, but affect behavior:
+
+**Preview visibility**  
+Show a preview window when resizing:
+
+```swift
+Defaults[.previewVisibility] // Default: true
+```
+
+When disabled, windows resize immediately without a preview.
+
+**Preview starting position** (hidden setting)  
+Control where the preview animation starts:
+
+```bash
+defaults write com.MrKai77.Loop previewStartingPosition -string "actionCenter"
+```
+
+Options:
+- `screenCenter` - Center of the screen
+- `radialMenu` - Center of radial menu  
+- `actionCenter` - Center of the target position (default)
+
+## Advanced Behavior Settings
+
+Additional behavior options available in the **Advanced** tab:
+
+**Use system window manager when available**  
+On macOS 15+, use native window management APIs:
+
+```swift
+Defaults[.useSystemWindowManagerWhenAvailable] // Default: false
+```
+
+When enabled, some Loop features may be limited, but window management will use Apple's official APIs.
+
+**Animate window resizes**  
+Use macOS animations when resizing windows:
+
+```swift
+Defaults[.animateWindowResizes] // Default: false
+```
+
+**Disable cursor interaction**  
+Prevent Loop from responding to mouse/trackpad input:
+
+```swift
+Defaults[.disableCursorInteraction] // Default: false
+```
+
+**Ignore fullscreen**  
+Allow Loop to resize fullscreen windows:
+
+```swift
+Defaults[.ignoreFullscreen] // Default: false
+```
+
+**Hide on no selection**  
+Automatically close Loop if you don't select an action:
+
+```swift
+Defaults[.hideOnNoSelection] // Default: false
+```
+
+**Haptic feedback**  
+Provide haptic feedback when performing actions:
+
+```swift
+Defaults[.hapticFeedback] // Default: true
+```
+
+**Ignore low power mode**  
+Continue animations even in Low Power Mode:
+
+```bash
+defaults write com.MrKai77.Loop ignoreLowPowerMode -bool true
+```
+
+By default, Loop respects Low Power Mode and may reduce animations.
+
+## Multi-Monitor Behavior
+
+Loop handles multi-monitor setups intelligently:
+
+- **Screen switching actions** move windows between monitors
+- **Cursor screen detection** ensures windows appear on the active screen
+- **Padding** can be configured per-screen using custom values
+- **Stage Manager** is respected on each display independently
+
+## Performance Considerations
+
+### Low Power Mode
+
+When macOS enters Low Power Mode, Loop may adjust behavior:
+
+- Reduced animations
+- Faster window transitions
+- Simpler visual effects
+
+Override with the `ignoreLowPowerMode` setting if you want consistent behavior.
+
+### System Window Manager
+
+Using the system window manager (macOS 15+) provides:
+
+✅ Better compatibility with macOS features  
+✅ Official API support  
+✅ Potentially better performance
+
+❌ Limited customization  
+❌ May not support all Loop features  
+❌ Requires specific macOS version
+
+## Behavior Implementation
+
+Behavior settings are implemented in:
+
+```
+source/Loop/Settings Window/Settings/Behavior/BehaviorConfiguration.swift
+```
+
+The view uses SwiftUI with reactive `@Default` property wrappers to immediately apply changes:
+
+```swift
+@Default(.launchAtLogin) var launchAtLogin
+@Default(.windowSnapping) var windowSnapping
+@Default(.resizeWindowUnderCursor) var resizeWindowUnderCursor
+// ...
+```
+
+Settings changes are automatically persisted and synchronized across devices via iCloud (where applicable).

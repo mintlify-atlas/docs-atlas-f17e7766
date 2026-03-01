@@ -1,0 +1,372 @@
+---
+title: Preview Window
+description: See exactly where your window will move before committing to the action
+icon: eye
+---
+
+## Overview
+
+The preview window provides visual feedback showing where your window will be positioned *before* you commit to the action. This helps you make precise adjustments and avoid unwanted window placements.
+
+<video controls src="https://github.com/user-attachments/assets/5ecb3ae8-f295-406f-b968-31e539f4a098" />
+
+The preview appears as a translucent outline at the target position, updating in real-time as you move your cursor or change your selection in the radial menu.
+
+## How It Works
+
+The preview window is a borderless, non-activating panel that overlays your screen:
+
+```swift Loop/Window Action Indicators/Preview Window/PreviewController.swift
+final class PreviewController: WindowActionIndicator {
+    func open(context: ResizeContext) {
+        let panel = ActivePanel(
+            contentRect: .zero,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: true
+        )
+        
+        panel.ignoresMouseEvents = true
+        panel.collectionBehavior = .canJoinAllSpaces
+        panel.hasShadow = false
+        panel.backgroundColor = .clear
+        panel.level = NSWindow.Level(NSWindow.Level.screenSaver.rawValue - 1)
+    }
+}
+```
+
+### Key Properties
+
+- **Non-activating**: Doesn't steal focus from your active window
+- **Mouse-transparent**: Clicks pass through to windows beneath
+- **Multi-space**: Appears on all spaces and displays
+- **Below radial menu**: Rendered at a lower level for proper visual layering
+
+## When Preview Appears
+
+The preview window automatically displays when:
+
+<Steps>
+  <Step title="Radial menu is active">
+    Holding the trigger key and moving your cursor shows a preview at the target position
+  </Step>
+  
+  <Step title="Using keyboard shortcuts">
+    Pressing a keybind (if preview is enabled) shows where the window will move
+  </Step>
+  
+  <Step title="Window snapping">
+    Dragging a window near screen edges displays snap zone previews
+  </Step>
+  
+  <Step title="Settings preview">
+    Selecting keybinds in settings shows a preview of the action
+  </Step>
+</Steps>
+
+<Note>
+  Even if you disable preview for keyboard shortcuts, window snapping will still use the preview system.
+</Note>
+
+## Configuration Options
+
+Navigate to **Settings > Theming > Preview** to customize appearance:
+
+### Basic Settings
+
+<ParamField path="Show preview when looping" type="toggle" default="true">
+  Enable or disable the preview window. When disabled, windows move directly without visual feedback (snapping still shows previews).
+</ParamField>
+
+<ParamField path="Padding" type="number" default="0" unit="pixels">
+  Space between the preview border and the actual content area (0-20 pixels). Useful for visual clarity.
+</ParamField>
+
+### Border Customization
+
+<ParamField path="Border thickness" type="number" default="4" unit="pixels">
+  Thickness of the preview outline (0-10 pixels). Set to 0 for a borderless preview.
+</ParamField>
+
+### Corner Radius
+
+Corner radius behavior varies by macOS version:
+
+<CodeGroup>
+```swift macOS 15 and Below
+LuminareSlider(
+    "Corner radius",
+    value: $previewCornerRadius.doubleBinding,
+    in: 0...25,
+    format: .number.precision(.fractionLength(0...0)),
+    suffix: Text("px")
+)
+```
+
+```swift macOS 16 and Above
+LuminareToggle(
+    "Prioritize selected window's corner radius",
+    isOn: $previewUseWindowCornerRadius
+)
+
+LuminareSlider(
+    previewUseWindowCornerRadius ? "Default corner radius" : "Corner radius",
+    value: $previewCornerRadius.doubleBinding,
+    in: 0...25
+)
+```
+</CodeGroup>
+
+<ParamField path="Prioritize selected window's corner radius" type="toggle" default="false" availability="macOS 16+">
+  When enabled, Loop reads the target window's actual corner radius and applies it to the preview. Falls back to the default corner radius if unavailable.
+</ParamField>
+
+<ParamField path="Corner radius" type="number" default="8" unit="pixels">
+  Roundness of preview corners (0-25 pixels). On macOS 16+, this serves as the default when window corner radius is unavailable.
+</ParamField>
+
+### Background Customization
+
+<ParamField path="Enable blur" type="toggle" default="false">
+  Add a blur effect to the preview background for better visibility against complex wallpapers.
+</ParamField>
+
+<ParamField path="Accent opacity" type="number" default="0.3" unit="percentage">
+  Transparency of the preview fill color (0-100%). Higher values make the preview more opaque.
+</ParamField>
+
+## Implementation Details
+
+### Screen Switching
+
+The preview automatically moves to the correct screen:
+
+```swift
+func open(context: ResizeContext) {
+    guard let screen = context.screen else { return }
+    
+    if let window = controller?.window {
+        var didScreenSwitch = false
+        
+        // Move panel to new screen if screen changed
+        if window.screen != screen {
+            window.setFrame(screen.frame, display: true)
+            didScreenSwitch = true
+        }
+        
+        viewModel.updateContext(with: context, isScreenSwitch: didScreenSwitch)
+        return
+    }
+}
+```
+
+### Context Updates
+
+The preview view model receives context updates containing:
+
+- Target frame position and size
+- Current screen information  
+- Active window action
+- Screen switch status
+
+```swift
+viewModel.updateContext(with: context, isScreenSwitch: didScreenSwitch)
+```
+
+### Close Animation
+
+The preview fades out gracefully:
+
+```swift
+func close() {
+    guard let windowController = controller else { return }
+    controller = nil
+    
+    Task {
+        viewModel.setIsShown(false)
+        try? await Task.sleep(for: .seconds(0.4))  // Wait for animation
+        windowController.window?.orderOut(nil)
+        windowController.close()
+    }
+}
+```
+
+<Tip>
+  The 0.4 second delay ensures the fade animation completes before destroying the window.
+</Tip>
+
+## Preview in Different Contexts
+
+### Radial Menu Preview
+
+As you move your cursor around the radial menu:
+
+1. Loop calculates the target frame based on cursor angle and distance
+2. Preview updates in real-time to show the new position
+3. Color and border adapt to match the selected action type
+
+### Keyboard Shortcut Preview
+
+When triggering actions via keyboard:
+
+1. Preview appears instantly at the target location
+2. Remains visible briefly (configurable duration)
+3. Window moves to match preview position when you release the trigger
+
+<Note>
+  If trigger delay is enabled, the preview appears after the delay period.
+</Note>
+
+### Window Snapping Preview
+
+During drag-to-snap operations:
+
+1. Preview appears when window approaches screen edges
+2. Shows snap zones (halves, quarters, etc.)
+3. Updates as you drag to different edge regions
+4. Window snaps to previewed position on release
+
+## Visual Customization Examples
+
+### Minimal Preview
+
+For a clean, minimal look:
+- **Padding**: 0px
+- **Border thickness**: 2px  
+- **Corner radius**: 0px
+- **Enable blur**: Off
+- **Accent opacity**: 20%
+
+### High Visibility Preview
+
+For maximum clarity:
+- **Padding**: 8px
+- **Border thickness**: 6px
+- **Corner radius**: 12px
+- **Enable blur**: On
+- **Accent opacity**: 50%
+
+### Matching Window Style (macOS 16+)
+
+For native appearance:
+- **Prioritize window corner radius**: On
+- **Default corner radius**: 10px
+- **Border thickness**: 4px
+- **Enable blur**: On  
+- **Accent opacity**: 30%
+
+## Settings Preview Mode
+
+The preview system integrates with Loop's settings interface:
+
+```swift
+// Preview configuration in settings
+@Default(.previewVisibility) private var previewVisibility
+@Default(.previewPadding) private var previewPadding
+@Default(.previewCornerRadius) private var previewCornerRadius
+@Default(.previewBorderThickness) private var previewBorderThickness
+```
+
+When you:
+- Select a keybind in settings
+- Adjust radial menu actions
+- Configure custom window sizes
+
+The preview appears in real-time, showing you exactly how the action will look.
+
+## Performance Considerations
+
+The preview system is optimized for performance:
+
+### Efficient Rendering
+
+- SwiftUI-based view with minimal overhead
+- Only updates when context changes
+- Reuses existing window when possible
+
+### Screen Management
+
+```swift
+// Reuse existing panel when on same screen
+if let window = controller?.window {
+    if window.screen != screen {
+        window.setFrame(screen.frame, display: true)
+    }
+    window.orderFrontRegardless()
+    viewModel.updateContext(with: context, isScreenSwitch: didScreenSwitch)
+    return
+}
+```
+
+Avoids creating new windows unnecessarily.
+
+### Level Management
+
+Preview appears just below the radial menu:
+
+```swift
+panel.level = NSWindow.Level(NSWindow.Level.screenSaver.rawValue - 1)
+```
+
+Vs radial menu:
+
+```swift
+panel.level = .screenSaver
+```
+
+This ensures correct visual layering without excessive level values.
+
+## Disabling Preview
+
+To disable preview while keeping other Loop features:
+
+<Steps>
+  <Step title="Open Settings">
+    Navigate to Settings > Theming > Preview
+  </Step>
+  
+  <Step title="Toggle off">
+    Disable "Show preview when looping"
+  </Step>
+  
+  <Step title="Optional: Disable cursor movement">
+    If enabled, also disable "Move cursor with window" for a completely minimal experience
+  </Step>
+</Steps>
+
+<Warning>
+  Window snapping will still show previews even when "Show preview when looping" is disabled. This is intentional to provide visual feedback during drag operations.
+</Warning>
+
+## Accessibility
+
+The preview window is designed with accessibility in mind:
+
+- **Non-intrusive**: Doesn't block interaction with other windows
+- **Customizable contrast**: Adjustable opacity and border thickness
+- **Optional blur**: Improves visibility against busy backgrounds
+- **VoiceOver compatible**: Preview state changes are announced
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Choose appropriate opacity">
+    Higher opacity (40-60%) for busy wallpapers, lower (20-30%) for minimal distractions.
+  </Accordion>
+  
+  <Accordion title="Match your workflow">
+    Disable preview if you prefer fast, direct window manipulation. Keep it enabled while learning Loop.
+  </Accordion>
+  
+  <Accordion title="Use blur selectively">
+    Enable blur if your wallpaper makes the preview hard to see, but note it adds slight overhead.
+  </Accordion>
+  
+  <Accordion title="Coordinate with radial menu">
+    Keep visual styles consistent between preview and radial menu for a cohesive experience.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  The preview is especially helpful when using cycles, as it shows you which action in the sequence will be applied next.
+</Tip>

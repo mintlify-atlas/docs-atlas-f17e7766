@@ -1,0 +1,554 @@
+---
+title: 'Size Adjustment Actions'
+description: 'Resize, grow, shrink, scale, and move windows incrementally'
+---
+
+## Overview
+
+Size adjustment actions provide fine-grained control over window dimensions and position. Unlike positioning actions that set absolute sizes, these actions make incremental changes relative to the current window state.
+
+Four categories of size adjustments are defined (lines 82-85):
+
+```swift
+static var sizeAdjustment: [WindowDirection] // General sizing
+static var shrink: [WindowDirection]          // Directional shrinking
+static var grow: [WindowDirection]            // Directional growing
+static var move: [WindowDirection]            // Directional movement
+```
+
+## General Size Adjustment
+
+Defined in the static `sizeAdjustment` array (line 82):
+
+```swift
+static var sizeAdjustment: [WindowDirection] { 
+    [.larger, .smaller, .scaleUp, .scaleDown] 
+}
+```
+
+### larger
+
+<ParamField path="larger" type="WindowDirection">
+  Increases window size by a fixed increment.
+  
+  **Raw Value:** `"Larger"`
+  
+  **URL Scheme:** `loop://Larger`
+  
+  **Behavior:**
+  - Expands window uniformly in all directions
+  - Maintains window center position
+  - Increment size is configurable in Loop settings
+  - Stops at screen boundaries
+  
+  **Use Case:** Quickly make window bigger while keeping it centered
+</ParamField>
+
+### smaller
+
+<ParamField path="smaller" type="WindowDirection">
+  Decreases window size by a fixed increment.
+  
+  **Raw Value:** `"Smaller"`
+  
+  **URL Scheme:** `loop://Smaller`
+  
+  **Behavior:**
+  - Shrinks window uniformly in all directions
+  - Maintains window center position
+  - Increment size is configurable in Loop settings
+  - Stops at minimum window size
+  
+  **Use Case:** Quickly make window smaller while keeping it centered
+</ParamField>
+
+### scaleUp
+
+<ParamField path="scaleUp" type="WindowDirection">
+  Scales window up proportionally.
+  
+  **Raw Value:** `"ScaleUp"`
+  
+  **URL Scheme:** `loop://ScaleUp`
+  
+  **Behavior:**
+  - Increases window size by a percentage multiplier
+  - Preserves window aspect ratio
+  - Maintains window center position
+  - More gradual than `.larger`
+  
+  **Use Case:** Fine-tuned proportional size increases
+</ParamField>
+
+### scaleDown
+
+<ParamField path="scaleDown" type="WindowDirection">
+  Scales window down proportionally.
+  
+  **Raw Value:** `"ScaleDown"`
+  
+  **URL Scheme:** `loop://ScaleDown`
+  
+  **Behavior:**
+  - Decreases window size by a percentage multiplier
+  - Preserves window aspect ratio
+  - Maintains window center position
+  - More gradual than `.smaller`
+  
+  **Use Case:** Fine-tuned proportional size decreases
+</ParamField>
+
+### Computed Property
+
+<ResponseField name="willAdjustSize" type="Bool">
+  Returns `true` for all general size adjustment actions (line 92)
+  
+  ```swift
+  var willAdjustSize: Bool { 
+      WindowDirection.sizeAdjustment.contains(self) 
+  }
+  ```
+</ResponseField>
+
+## Shrink Actions
+
+Defined in the static `shrink` array (line 83):
+
+```swift
+static var shrink: [WindowDirection] { 
+    [.shrinkTop, .shrinkBottom, .shrinkRight, .shrinkLeft, 
+     .shrinkHorizontal, .shrinkVertical] 
+}
+```
+
+### Directional Shrinking
+
+<ParamField path="shrinkTop" type="WindowDirection">
+  Shrinks window from the top edge downward.
+  
+  **Raw Value:** `"ShrinkTop"`
+  
+  **URL Scheme:** `loop://ShrinkTop`
+  
+  **Behavior:**
+  - Reduces window height from top edge
+  - Bottom edge remains fixed
+  - Width unchanged
+  
+  **Visual:**
+  ```
+  Before:        After:
+  ┌────────┐     ┌────────┐
+  │        │     ├────────┤ ← Top edge moves down
+  │        │     │        │
+  │        │     │        │
+  └────────┘     └────────┘
+  ```
+</ParamField>
+
+<ParamField path="shrinkBottom" type="WindowDirection">
+  Shrinks window from the bottom edge upward.
+  
+  **Raw Value:** `"ShrinkBottom"`
+  
+  **URL Scheme:** `loop://ShrinkBottom`
+  
+  **Behavior:**
+  - Reduces window height from bottom edge
+  - Top edge remains fixed
+  - Width unchanged
+  
+  **Visual:**
+  ```
+  Before:        After:
+  ┌────────┐     ┌────────┐
+  │        │     │        │
+  │        │     │        │
+  │        │     ├────────┤ ← Bottom edge moves up
+  └────────┘     └────────┘
+  ```
+</ParamField>
+
+<ParamField path="shrinkLeft" type="WindowDirection">
+  Shrinks window from the left edge rightward.
+  
+  **Raw Value:** `"ShrinkLeft"`
+  
+  **URL Scheme:** `loop://ShrinkLeft`
+  
+  **Behavior:**
+  - Reduces window width from left edge
+  - Right edge remains fixed
+  - Height unchanged
+  
+  **Visual:**
+  ```
+  Before:        After:
+  ┌────────┐     ┌──────┐
+  │        │     │      │
+  │        │  →  │      │
+  │        │     │      │
+  └────────┘     └──────┘
+  ```
+</ParamField>
+
+<ParamField path="shrinkRight" type="WindowDirection">
+  Shrinks window from the right edge leftward.
+  
+  **Raw Value:** `"ShrinkRight"`
+  
+  **URL Scheme:** `loop://ShrinkRight`
+  
+  **Behavior:**
+  - Reduces window width from right edge
+  - Left edge remains fixed
+  - Height unchanged
+  
+  **Visual:**
+  ```
+  Before:        After:
+  ┌────────┐     ┌──────┐
+  │        │     │      │
+  │        │  →  │      │
+  │        │     │      │
+  └────────┘     └──────┘
+  ```
+</ParamField>
+
+### Combined Shrinking
+
+<ParamField path="shrinkHorizontal" type="WindowDirection">
+  Shrinks window width from both left and right edges.
+  
+  **Raw Value:** `"ShrinkHorizontal"`
+  
+  **URL Scheme:** `loop://ShrinkHorizontal`
+  
+  **Behavior:**
+  - Reduces width equally from both sides
+  - Maintains horizontal center position
+  - Height unchanged
+  
+  **Visual:**
+  ```
+  Before:        After:
+  ┌────────┐     ┌─────┐
+  │        │     │     │
+  │        │  →  │     │
+  │        │     │     │
+  └────────┘     └─────┘
+  ```
+</ParamField>
+
+<ParamField path="shrinkVertical" type="WindowDirection">
+  Shrinks window height from both top and bottom edges.
+  
+  **Raw Value:** `"ShrinkVertical"`
+  
+  **URL Scheme:** `loop://ShrinkVertical`
+  
+  **Behavior:**
+  - Reduces height equally from both sides
+  - Maintains vertical center position
+  - Width unchanged
+  
+  **Visual:**
+  ```
+  Before:        After:
+  ┌────────┐     ┌────────┐
+  │        │     ├────────┤
+  │        │  →  │        │
+  │        │     ├────────┤
+  └────────┘     └────────┘
+  ```
+</ParamField>
+
+### Computed Property
+
+<ResponseField name="willShrink" type="Bool">
+  Returns `true` for all shrink actions (line 93)
+  
+  ```swift
+  var willShrink: Bool { 
+      WindowDirection.shrink.contains(self) 
+  }
+  ```
+</ResponseField>
+
+## Grow Actions
+
+Defined in the static `grow` array (line 84):
+
+```swift
+static var grow: [WindowDirection] { 
+    [.growTop, .growBottom, .growRight, .growLeft, 
+     .growHorizontal, .growVertical] 
+}
+```
+
+### Directional Growing
+
+<ParamField path="growTop" type="WindowDirection">
+  Grows window from the top edge upward.
+  
+  **Raw Value:** `"GrowTop"`
+  
+  **URL Scheme:** `loop://GrowTop`
+  
+  **Behavior:**
+  - Extends window height upward
+  - Bottom edge remains fixed
+  - Width unchanged
+  - Stops at screen top boundary
+</ParamField>
+
+<ParamField path="growBottom" type="WindowDirection">
+  Grows window from the bottom edge downward.
+  
+  **Raw Value:** `"GrowBottom"`
+  
+  **URL Scheme:** `loop://GrowBottom`
+  
+  **Behavior:**
+  - Extends window height downward
+  - Top edge remains fixed
+  - Width unchanged
+  - Stops at screen bottom boundary
+</ParamField>
+
+<ParamField path="growLeft" type="WindowDirection">
+  Grows window from the left edge leftward.
+  
+  **Raw Value:** `"GrowLeft"`
+  
+  **URL Scheme:** `loop://GrowLeft`
+  
+  **Behavior:**
+  - Extends window width to the left
+  - Right edge remains fixed
+  - Height unchanged
+  - Stops at screen left boundary
+</ParamField>
+
+<ParamField path="growRight" type="WindowDirection">
+  Grows window from the right edge rightward.
+  
+  **Raw Value:** `"GrowRight"`
+  
+  **URL Scheme:** `loop://GrowRight`
+  
+  **Behavior:**
+  - Extends window width to the right
+  - Left edge remains fixed
+  - Height unchanged
+  - Stops at screen right boundary
+</ParamField>
+
+### Combined Growing
+
+<ParamField path="growHorizontal" type="WindowDirection">
+  Grows window width in both directions.
+  
+  **Raw Value:** `"GrowHorizontal"`
+  
+  **URL Scheme:** `loop://GrowHorizontal`
+  
+  **Behavior:**
+  - Extends width equally left and right
+  - Maintains horizontal center position
+  - Height unchanged
+  - Stops at screen boundaries
+</ParamField>
+
+<ParamField path="growVertical" type="WindowDirection">
+  Grows window height in both directions.
+  
+  **Raw Value:** `"GrowVertical"`
+  
+  **URL Scheme:** `loop://GrowVertical`
+  
+  **Behavior:**
+  - Extends height equally up and down
+  - Maintains vertical center position
+  - Width unchanged
+  - Stops at screen boundaries
+</ParamField>
+
+### Computed Property
+
+<ResponseField name="willGrow" type="Bool">
+  Returns `true` for all grow actions (line 94)
+  
+  ```swift
+  var willGrow: Bool { 
+      WindowDirection.grow.contains(self) 
+  }
+  ```
+</ResponseField>
+
+## Move Actions
+
+Defined in the static `move` array (line 85):
+
+```swift
+static var move: [WindowDirection] { 
+    [.moveUp, .moveDown, .moveRight, .moveLeft] 
+}
+```
+
+### Directional Movement
+
+<ParamField path="moveUp" type="WindowDirection">
+  Moves window upward by a fixed increment.
+  
+  **Raw Value:** `"MoveUp"`
+  
+  **URL Scheme:** `loop://MoveUp`
+  
+  **Behavior:**
+  - Shifts entire window upward
+  - Size unchanged
+  - Stops at screen top boundary
+  - Increment configurable in settings
+</ParamField>
+
+<ParamField path="moveDown" type="WindowDirection">
+  Moves window downward by a fixed increment.
+  
+  **Raw Value:** `"MoveDown"`
+  
+  **URL Scheme:** `loop://MoveDown`
+  
+  **Behavior:**
+  - Shifts entire window downward
+  - Size unchanged
+  - Stops at screen bottom boundary
+  - Increment configurable in settings
+</ParamField>
+
+<ParamField path="moveLeft" type="WindowDirection">
+  Moves window left by a fixed increment.
+  
+  **Raw Value:** `"MoveLeft"`
+  
+  **URL Scheme:** `loop://MoveLeft`
+  
+  **Behavior:**
+  - Shifts entire window to the left
+  - Size unchanged
+  - Stops at screen left boundary
+  - Increment configurable in settings
+</ParamField>
+
+<ParamField path="moveRight" type="WindowDirection">
+  Moves window right by a fixed increment.
+  
+  **Raw Value:** `"MoveRight"`
+  
+  **URL Scheme:** `loop://MoveRight`
+  
+  **Behavior:**
+  - Shifts entire window to the right
+  - Size unchanged
+  - Stops at screen right boundary
+  - Increment configurable in settings
+</ParamField>
+
+### Computed Property
+
+<ResponseField name="willMove" type="Bool">
+  Returns `true` for all move actions (line 95)
+  
+  ```swift
+  var willMove: Bool { 
+      WindowDirection.move.contains(self) 
+  }
+  ```
+</ResponseField>
+
+## Usage Examples
+
+### Incremental Resizing
+
+```bash
+# Make window progressively larger
+open "loop://Larger"
+open "loop://Larger"
+open "loop://Larger"
+
+# Make window progressively smaller
+open "loop://Smaller"
+open "loop://Smaller"
+```
+
+### Edge Adjustment
+
+```bash
+# Adjust only the right edge to fit content
+open "loop://GrowRight"    # Expand right edge
+open "loop://ShrinkRight"  # Contract right edge
+
+# Adjust only the bottom edge
+open "loop://GrowBottom"
+open "loop://ShrinkBottom"
+```
+
+### Precise Positioning
+
+```bash
+# Nudge window into perfect position
+open "loop://MoveLeft"
+open "loop://MoveUp"
+open "loop://MoveUp"
+```
+
+### Keyboard-Driven Workflow
+
+Bind these to keyboard shortcuts for precise window control:
+
+- **Cmd+Ctrl+Arrow Keys:** Move window
+- **Cmd+Option+Arrow Keys:** Grow edges
+- **Cmd+Shift+Arrow Keys:** Shrink edges
+- **Cmd+Plus/Minus:** Larger/Smaller
+
+## Radial Menu Behavior
+
+Size adjustment, shrink, grow, and move actions don't have directional angles in the radial menu (line 102):
+
+```swift
+var hasRadialMenuAngle: Bool {
+    let noAngleActions: [WindowDirection] = [...]
+    return !(... || willAdjustSize || willShrink || willGrow || willMove)
+}
+```
+
+They appear as menu items rather than directional triggers.
+
+## Configuration
+
+Increment sizes for these actions are configurable in Loop's settings:
+
+- **Size adjustment increment:** Amount for `.larger` and `.smaller`
+- **Scale factor:** Multiplier for `.scaleUp` and `.scaleDown`
+- **Grow/shrink increment:** Amount for directional grow/shrink
+- **Move increment:** Distance for directional moves
+
+## Related Actions
+
+<CardGroup cols={2}>
+  <Card title="Halves & Quarters" href="/api/halves-quarters">
+    Absolute positioning alternatives
+  </Card>
+  
+  <Card title="General Actions" href="/api/general-actions">
+    Maximize and fill actions
+  </Card>
+  
+  <Card title="Focus Actions" href="/api/focus-actions">
+    Navigate between windows
+  </Card>
+  
+  <Card title="WindowDirection Overview" href="/api/window-directions">
+    Complete action reference
+  </Card>
+</CardGroup>

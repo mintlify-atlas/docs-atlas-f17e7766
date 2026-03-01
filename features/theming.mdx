@@ -1,0 +1,403 @@
+---
+title: Theming
+description: Customize Loop's visual appearance with extensive theming options for radial menu and preview window
+icon: palette
+---
+
+## Overview
+
+Loop offers comprehensive theming capabilities allowing you to customize the appearance of the radial menu and preview window. Adjust colors, sizes, shapes, and visual effects to match your personal aesthetic or integrate seamlessly with your macOS setup.
+
+<video controls src="https://github.com/user-attachments/assets/b2d3f6c8-dd68-4ac2-a30a-19f36a8fd94d" />
+
+## Radial Menu Theming
+
+The radial menu is fully customizable in terms of width, shape, and color. Both the cursor interaction and the radial menu visualization are independently toggleable.
+
+### Visual Customization
+
+Access radial menu theming in **Settings > Theming > Radial Menu**:
+
+<ParamField path="Radial menu" type="toggle" default="enabled">
+  Enable or disable the visual radial menu. When disabled, cursor-based directional control can still function without the visual indicator.
+</ParamField>
+
+<ParamField path="Corner radius" type="number" default="40" unit="pixels">
+  Control the roundness of radial menu segments (30-50 pixels).
+  
+  - **Lower values (30-35)**: Sharp, angular appearance
+  - **Higher values (45-50)**: Smooth, circular appearance
+</ParamField>
+
+<ParamField path="Thickness" type="number" default="20" unit="pixels">
+  Adjust the thickness of the radial menu ring (10-35 pixels).
+  
+  - **Thin (10-15)**: Minimal, subtle indicator
+  - **Thick (25-35)**: Bold, highly visible interface
+</ParamField>
+
+### Implementation
+
+The radial menu configuration is managed by `RadialMenuConfigurationView`:
+
+```swift Loop/Settings Window/Theming/Radial Menu/RadialMenuConfigurationView.swift
+struct RadialMenuConfigurationView: View {
+    @Default(.radialMenuVisibility) private var radialMenuVisibility
+    @Default(.radialMenuCornerRadius) private var radialMenuCornerRadius
+    @Default(.radialMenuThickness) private var radialMenuThickness
+    
+    var body: some View {
+        LuminareSection {
+            LuminareToggle("Radial menu", isOn: $radialMenuVisibility)
+            
+            LuminareSlider(
+                "Corner radius",
+                value: $radialMenuCornerRadius.doubleBinding,
+                in: 30...50,
+                clampsUpper: true,
+                clampsLower: true,
+                suffix: Text("px")
+            )
+            
+            LuminareSlider(
+                "Thickness",
+                value: $radialMenuThickness.doubleBinding,
+                in: 10...35,
+                clampsUpper: true,
+                clampsLower: true,
+                suffix: Text("px")
+            )
+        }
+    }
+}
+```
+
+### Interdependent Properties
+
+Corner radius and thickness have smart constraints:
+
+```swift
+.onChange(of: radialMenuCornerRadius) { _ in
+    // Thickness cannot exceed corner radius - 1
+    if radialMenuCornerRadius - 1 < radialMenuThickness {
+        radialMenuThickness = radialMenuCornerRadius - 1
+    }
+}
+
+.onChange(of: radialMenuThickness) { _ in
+    // Corner radius must be at least thickness + 1
+    if radialMenuThickness + 1 > radialMenuCornerRadius {
+        radialMenuCornerRadius = radialMenuThickness + 1
+    }
+}
+```
+
+This prevents visual inconsistencies and ensures the radial menu always renders correctly.
+
+### Custom Actions
+
+You can customize which actions appear in the radial menu:
+
+<Steps>
+  <Step title="Enable customization">
+    Toggle on custom radial menu actions in Settings > Theming > Radial Menu
+  </Step>
+  
+  <Step title="Add actions">
+    Click "Add" to insert new actions into the radial menu
+  </Step>
+  
+  <Step title="Configure each action">
+    Select the action type and configure its properties
+  </Step>
+  
+  <Step title="Reorder">
+    Use move up/down buttons to change action positions
+  </Step>
+  
+  <Step title="Remove unwanted actions">
+    Select actions and click "Remove" to delete them
+  </Step>
+</Steps>
+
+<Note>
+  Left-click to step through cycle actions in the radial menu.
+</Note>
+
+## Preview Window Theming
+
+Customize the preview window appearance to match your preferences:
+
+<video controls src="https://github.com/user-attachments/assets/fc107861-8125-42c2-b987-2fff554078d5" />
+
+Access preview theming in **Settings > Theming > Preview**.
+
+### Visual Properties
+
+<ParamField path="Show preview when looping" type="toggle" default="true">
+  Enable or disable the preview window visualization.
+  
+  <Warning>
+    Window snapping will still use the preview even when this is disabled.
+  </Warning>
+</ParamField>
+
+<ParamField path="Padding" type="number" default="0" unit="pixels">
+  Inner padding between the preview border and content area (0-20 pixels).
+  
+  - **No padding (0)**: Preview matches exact window bounds
+  - **With padding (8-12)**: Creates visual breathing room
+</ParamField>
+
+<ParamField path="Border thickness" type="number" default="4" unit="pixels">
+  Width of the preview outline (0-10 pixels).
+  
+  - **No border (0)**: Filled rectangle only
+  - **Thin border (2-4)**: Subtle outline
+  - **Thick border (6-10)**: Bold, prominent frame
+</ParamField>
+
+### Corner Radius Configuration
+
+Corner radius behavior varies by macOS version.
+
+#### macOS 15 and Below
+
+Simple corner radius slider:
+
+<ParamField path="Corner radius" type="number" default="8" unit="pixels">
+  Roundness of preview corners (0-25 pixels).
+</ParamField>
+
+#### macOS 16 and Above
+
+Advanced corner radius with window matching:
+
+<ParamField path="Prioritize selected window's corner radius" type="toggle" default="false" availability="macOS 16+">
+  When enabled, Loop reads the target window's actual corner radius and applies it to the preview for a native appearance.
+</ParamField>
+
+<ParamField path="Default corner radius" type="number" default="8" unit="pixels" availability="macOS 16+">
+  Fallback corner radius when window corner radius is unavailable or when prioritization is disabled.
+</ParamField>
+
+Implementation:
+
+```swift Loop/Settings Window/Theming/PreviewConfiguration.swift
+if #available(macOS 26, *) {
+    LuminareSection("Corner Radius") {
+        LuminareToggle(
+            "Prioritize selected window's corner radius",
+            isOn: $previewUseWindowCornerRadius
+        )
+        
+        LuminareSlider(
+            previewUseWindowCornerRadius ? "Default corner radius" : "Corner radius",
+            value: $previewCornerRadius.doubleBinding,
+            in: 0...25,
+            suffix: Text("px")
+        )
+    }
+}
+```
+
+### Background Styling
+
+<ParamField path="Enable blur" type="toggle" default="false">
+  Add a blur effect to the preview background for improved visibility against complex wallpapers.
+</ParamField>
+
+<ParamField path="Accent opacity" type="number" default="30" unit="percentage">
+  Transparency of the preview fill color (0-100%).
+  
+  - **Low opacity (10-20%)**: Subtle, barely-there preview
+  - **Medium opacity (30-40%)**: Balanced visibility
+  - **High opacity (50-100%)**: Solid, prominent preview
+</ParamField>
+
+```swift
+LuminareSlider(
+    "Accent opacity",
+    value: $previewBackgroundAccentOpacity.doubleBinding,
+    in: 0...1,
+    step: 0.1,
+    format: .percent.precision(.fractionLength(0...0)),
+    clampsUpper: true,
+    clampsLower: true
+)
+```
+
+## Theming Presets
+
+While Loop doesn't have built-in preset saving, you can recreate these popular configurations:
+
+### Minimal Dark
+
+**Radial Menu:**
+- Visibility: Enabled
+- Corner radius: 35px
+- Thickness: 12px
+
+**Preview:**
+- Padding: 0px
+- Border thickness: 2px
+- Corner radius: 4px
+- Blur: Disabled
+- Accent opacity: 20%
+
+### Bold & Visible
+
+**Radial Menu:**
+- Visibility: Enabled
+- Corner radius: 45px
+- Thickness: 30px
+
+**Preview:**
+- Padding: 10px
+- Border thickness: 8px
+- Corner radius: 15px
+- Blur: Enabled
+- Accent opacity: 60%
+
+### Native macOS (macOS 16+)
+
+**Radial Menu:**
+- Visibility: Enabled
+- Corner radius: 40px
+- Thickness: 20px
+
+**Preview:**
+- Padding: 4px
+- Border thickness: 4px
+- Prioritize window corner radius: Enabled
+- Default corner radius: 10px
+- Blur: Enabled
+- Accent opacity: 35%
+
+### Keyboard-Only
+
+**Radial Menu:**
+- Visibility: Disabled
+
+**Preview:**
+- Padding: 0px
+- Border thickness: 6px
+- Corner radius: 0px
+- Blur: Disabled
+- Accent opacity: 40%
+
+## Live Preview
+
+All theming changes are reflected in real-time:
+
+- Adjust sliders to see immediate visual updates
+- The settings window includes preview demonstrations
+- Select keybinds or actions to trigger preview displays
+
+```swift
+.onChange(of: selectedRadialMenuActions, perform: userSelectionChanged)
+.onChange(of: windowModel.previewedAction, perform: previewedActionChanged)
+```
+
+This allows you to fine-tune appearance without repeatedly triggering Loop manually.
+
+## Independent Control
+
+Radial menu and cursor interaction can be configured independently:
+
+<CardGroup cols={2}>
+  <Card title="Visual Only" icon="eye">
+    Radial menu enabled, cursor interaction disabled - shows visual feedback without mouse control
+  </Card>
+  <Card title="Cursor Only" icon="hand-pointer">
+    Cursor interaction enabled, radial menu disabled - invisible directional control
+  </Card>
+  <Card title="Both" icon="circle-dot">
+    Both enabled - full visual and interactive experience
+  </Card>
+  <Card title="Neither" icon="keyboard">
+    Both disabled - keyboard shortcuts only
+  </Card>
+</CardGroup>
+
+This flexibility allows you to create exactly the workflow you want.
+
+## Accessibility Considerations
+
+### High Contrast Mode
+
+For better visibility:
+- Increase border thickness to 6-8px
+- Set accent opacity to 50-70%
+- Enable blur for background separation
+- Use higher thickness (25-30px) for radial menu
+
+### Reduced Motion
+
+If you prefer minimal animations:
+- Preview still functions without animation
+- Radial menu appearance is instant
+- No essential features require animation
+
+### Color Customization
+
+<Note>
+  Loop currently uses system accent colors. Custom color selection may be added in future versions.
+</Note>
+
+## Performance Impact
+
+### Blur Effect
+
+Enabling blur adds minor overhead:
+- Negligible on modern Macs (2020+)
+- May impact older hardware
+- Most noticeable with large preview areas
+
+### Radial Menu Complexity
+
+Thicker, more complex radial menus require more rendering:
+- Thickness 10-20px: Minimal impact
+- Thickness 25-35px: Slightly higher GPU usage
+- Not noticeable on recent hardware
+
+<Tip>
+  If experiencing performance issues, disable blur and reduce radial menu thickness.
+</Tip>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Match your desktop aesthetic">
+    Choose theming that complements your wallpaper, dock transparency, and overall macOS appearance.
+  </Accordion>
+  
+  <Accordion title="Prioritize visibility">
+    Ensure preview and radial menu are visible against your typical background. Test with your common applications open.
+  </Accordion>
+  
+  <Accordion title="Consider your workflow">
+    Heavy keyboard users might prefer minimal theming. Mouse-heavy workflows benefit from prominent visual feedback.
+  </Accordion>
+  
+  <Accordion title="Use window corner matching (macOS 16+)">
+    Enable window corner radius prioritization for the most native-feeling previews that match each application's style.
+  </Accordion>
+  
+  <Accordion title="Disable what you don't use">
+    If you never use the radial menu, disable it to reduce visual clutter and improve performance.
+  </Accordion>
+</AccordionGroup>
+
+## Future Theming Options
+
+Potential upcoming features:
+- Custom color selection (beyond system accent)
+- Saved theming presets
+- Per-action color customization
+- Animation speed control
+- Window transition effects
+
+<Tip>
+  Check Loop's GitHub repository for theming feature requests and contribute your ideas!
+</Tip>

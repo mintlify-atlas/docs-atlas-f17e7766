@@ -1,0 +1,153 @@
+---
+title: Localization
+description: Help translate Loop to your language
+---
+
+We want to make Loop accessible to everyone by supporting as many languages as possible. Help us translate Loop to your language!
+
+## Currently Supported Languages
+
+Loop currently supports the following languages:
+
+- Arabic (ar)
+- German (de)
+- English (en)
+- Spanish (es)
+- French (fr)
+- Italian (it)
+- Japanese (ja)
+- Korean (ko)
+- Dutch (Belgium) (nl-BE)
+- Polish (pl)
+- Portuguese (Brazil) (pt-BR)
+- Russian (ru)
+- Chinese Simplified (zh-Hans)
+- Chinese Traditional (zh-Hant)
+
+## Using Crowdin (Recommended)
+
+The easiest way to contribute translations is through Crowdin:
+
+<Steps>
+  <Step title="Join the Crowdin project">
+    1. Go to the [Loop Crowdin page](https://crowdin.com/project/loop-i18n)
+    2. Click the `Join the team` button
+  </Step>
+
+  <Step title="Sign in">
+    Login or sign up with your GitHub account
+  </Step>
+
+  <Step title="Request access">
+    1. Add a message at the top of the page
+    2. Click `Request Access`
+    3. Wait for your account to be approved
+  </Step>
+
+  <Step title="Start translating">
+    Once approved, you can start translating strings in your language!
+  </Step>
+</Steps>
+
+<Note>
+If your language isn't listed on Crowdin, don't worry! Contact us on [Discord](https://discord.gg/2CZ2N6PKjq) or create an issue on GitHub, and we'll help you get started.
+</Note>
+
+## Manual Translation (Advanced)
+
+For contributors who want to add translations directly to the codebase:
+
+### Understanding the Structure
+
+Localization files are stored in `.lproj` directories within the Loop project:
+
+```
+Loop/
+├── ar.lproj/          # Arabic
+├── de.lproj/          # German
+├── en.lproj/          # English (base language)
+├── es.lproj/          # Spanish
+├── fr.lproj/          # French
+└── ...                # Other languages
+```
+
+Each directory contains:
+- `InfoPlist.strings` - App metadata translations
+- Other `.strings` files for UI text
+
+### Adding a New Language
+
+<Steps>
+  <Step title="Contact maintainers first">
+    Before manually adding a language, reach out on [Discord](https://discord.gg/2CZ2N6PKjq) or open an issue. This ensures:
+    - Your language isn't already being worked on
+    - Maintainers can provide guidance
+    - Your work aligns with the project's needs
+  </Step>
+
+  <Step title="Create the .lproj directory">
+    In Xcode or via the file system, create a new directory following the naming convention:
+
+    - Use ISO 639-1 language codes (e.g., `ja` for Japanese)
+    - For regional variants, use `language-Region` (e.g., `pt-BR` for Brazilian Portuguese)
+  </Step>
+
+  <Step title="Copy base strings files">
+    Copy all `.strings` files from `en.lproj/` to your new language directory as a starting point.
+  </Step>
+
+  <Step title="Translate the strings">
+    Open each `.strings` file and translate the values (right side) while keeping the keys (left side) unchanged:
+
+    ```swift
+    // Before (en.lproj)
+    "CFBundleName" = "Loop";
+    "CFBundleDisplayName" = "Loop";
+
+    // After (ja.lproj)
+    "CFBundleName" = "Loop";
+    "CFBundleDisplayName" = "Loop";
+    ```
+  </Step>
+
+  <Step title="Test your translations">
+    1. Build Loop in Xcode
+    2. Change your system language to the one you added
+    3. Launch Loop and verify all strings appear correctly
+    4. Check for truncation, layout issues, or missing translations
+  </Step>
+
+  <Step title="Submit a pull request">
+    Follow the [Code Guidelines](/contributing/code-guidelines) to submit your translations:
+
+    ```bash
+    git add .
+    git commit -m "🌐 Add [Language Name] localization"
+    git push origin develop
+    ```
+
+    Then create a pull request on GitHub.
+  </Step>
+</Steps>
+
+## Translation Guidelines
+
+When translating Loop:
+
+- **Be consistent** - Use the same terms throughout for repeated concepts
+- **Match the tone** - Keep the friendly, accessible tone of the original English text
+- **Test thoroughly** - Ensure translations fit in the UI without being cut off
+- **Preserve formatting** - Keep any format specifiers like `%@` or `%d` in the same position
+- **Ask for help** - If you're unsure about a translation, ask on Discord
+
+<Tip>
+Native speakers provide the best translations! Even if you're not a professional translator, your understanding of the language and culture is valuable.
+</Tip>
+
+## Getting Help
+
+Need assistance with localization?
+
+- **Discord** - Join our [Discord server](https://discord.gg/2CZ2N6PKjq) and ask in the localization channel
+- **GitHub Issues** - Open an issue tagged with "localization"
+- **Crowdin** - Use Crowdin's comment feature to ask questions about specific strings

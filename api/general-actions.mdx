@@ -1,0 +1,253 @@
+---
+title: 'General Window Actions'
+description: 'Fullscreen, maximize, center, minimize, and hide window actions'
+---
+
+## Overview
+
+General window actions provide essential window management functionality. These actions are defined in the static `general` array (line 75):
+
+```swift
+static var general: [WindowDirection] { 
+    [.fullscreen, .maximize, .almostMaximize, .maximizeHeight, 
+     .maximizeWidth, .fillAvailableSpace, .center, .macOSCenter, 
+     .minimize, .minimizeOthers, .hide] 
+}
+```
+
+## Fullscreen & Maximize Actions
+
+### fullscreen
+
+<ParamField path="fullscreen" type="WindowDirection">
+  Enters native macOS fullscreen mode for the frontmost window.
+  
+  **Raw Value:** `"Fullscreen"`
+  
+  **URL Scheme:** `loop://Fullscreen`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 1.0, height: 1.0)` (line 113)
+  
+  **Behavior:**
+  - Triggers macOS native fullscreen
+  - Creates a new Space for the window
+  - Hides menu bar and dock
+  - Different from `.maximize` which resizes within current space
+</ParamField>
+
+### maximize
+
+<ParamField path="maximize" type="WindowDirection">
+  Maximizes the window to fill the entire available screen space.
+  
+  **Raw Value:** `"Maximize"`
+  
+  **URL Scheme:** `loop://Maximize`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 1.0, height: 1.0)` (line 111)
+  
+  **Behavior:**
+  - Resizes to 100% of available screen space
+  - Stays in current Space (doesn't create new Space)
+  - Menu bar and dock remain accessible
+</ParamField>
+
+### almostMaximize
+
+<ParamField path="almostMaximize" type="WindowDirection">
+  Maximizes the window to 90% of screen space, centered with equal margins.
+  
+  **Raw Value:** `"AlmostMaximize"`
+  
+  **URL Scheme:** `loop://AlmostMaximize`
+  
+  **Frame Values:** `CGRect(x: 0.5/10.0, y: 0.5/10.0, width: 9.0/10.0, height: 9.0/10.0)` (line 112)
+  
+  **Behavior:**
+  - Window occupies 90% width and 90% height
+  - 5% margin on all sides
+  - Useful for focusing on content while maintaining visual context
+</ParamField>
+
+### maximizeHeight
+
+<ParamField path="maximizeHeight" type="WindowDirection">
+  Maximizes only the window height, maintaining current width and horizontal position.
+  
+  **Raw Value:** `"MaximizeHeight"`
+  
+  **URL Scheme:** `loop://MaximizeHeight`
+  
+  **Behavior:**
+  - Extends window vertically to full screen height
+  - Preserves current horizontal position and width
+  - Useful for documents and code editing
+</ParamField>
+
+### maximizeWidth
+
+<ParamField path="maximizeWidth" type="WindowDirection">
+  Maximizes only the window width, maintaining current height and vertical position.
+  
+  **Raw Value:** `"MaximizeWidth"`
+  
+  **URL Scheme:** `loop://MaximizeWidth`
+  
+  **Behavior:**
+  - Extends window horizontally to full screen width
+  - Preserves current vertical position and height
+  - Useful for wide content like timelines or spreadsheets
+</ParamField>
+
+### fillAvailableSpace
+
+<ParamField path="fillAvailableSpace" type="WindowDirection">
+  Expands the window to fill all available space not occupied by other windows.
+  
+  **Raw Value:** `"FillAvailableSpace"`
+  
+  **URL Scheme:** `loop://FillAvailableSpace`
+  
+  **Behavior:**
+  - Intelligently detects gaps and available screen space
+  - Resizes to fill space without overlapping other windows
+  - Useful for tiling workflows
+</ParamField>
+
+## Centering Actions
+
+### center
+
+<ParamField path="center" type="WindowDirection">
+  Centers the window on screen, maintaining its current size.
+  
+  **Raw Value:** `"Center"`
+  
+  **URL Scheme:** `loop://Center`
+  
+  **Behavior:**
+  - Moves window to screen center
+  - Preserves current window dimensions
+  - Loop's default centering behavior
+  
+  **Note:** Identified by `willCenter` property (line 97)
+</ParamField>
+
+### macOSCenter
+
+<ParamField path="macOSCenter" type="WindowDirection">
+  Centers the window using macOS native centering behavior.
+  
+  **Raw Value:** `"MacOSCenter"`
+  
+  **URL Scheme:** `loop://MacOSCenter`
+  
+  **Behavior:**
+  - Uses macOS system centering algorithm
+  - May differ slightly from Loop's `.center` action
+  - Preserves current window dimensions
+  
+  **Note:** Identified by `willCenter` property (line 97)
+</ParamField>
+
+## Window Management Actions
+
+### minimize
+
+<ParamField path="minimize" type="WindowDirection">
+  Minimizes the frontmost window to the Dock.
+  
+  **Raw Value:** `"Minimize"`
+  
+  **URL Scheme:** `loop://Minimize`
+  
+  **Behavior:**
+  - Sends window to Dock with minimize animation
+  - Window remains open but hidden
+  - Click Dock icon to restore
+  
+  **Note:** Does not have a radial menu angle (line 101)
+</ParamField>
+
+### minimizeOthers
+
+<ParamField path="minimizeOthers" type="WindowDirection">
+  Minimizes all windows except the frontmost window.
+  
+  **Raw Value:** `"MinimizeOthers"`
+  
+  **URL Scheme:** `loop://MinimizeOthers`
+  
+  **Behavior:**
+  - Keeps current window visible
+  - Minimizes all other windows to Dock
+  - Useful for quick workspace cleanup
+  
+  **Note:** Does not have a radial menu angle (line 101)
+</ParamField>
+
+### hide
+
+<ParamField path="hide" type="WindowDirection">
+  Hides the frontmost application and all its windows.
+  
+  **Raw Value:** `"Hide"`
+  
+  **URL Scheme:** `loop://Hide`
+  
+  **Behavior:**
+  - Hides entire application (not just current window)
+  - Equivalent to Cmd+H
+  - Use Cmd+Tab or click app icon to restore
+  
+  **Note:** Does not have a radial menu angle (line 101)
+</ParamField>
+
+## Usage Examples
+
+### URL Scheme
+
+```bash
+# Maximize the frontmost window
+open "loop://Maximize"
+
+# Almost maximize with margins
+open "loop://AlmostMaximize"
+
+# Center the window
+open "loop://Center"
+
+# Minimize all other windows
+open "loop://MinimizeOthers"
+```
+
+### Keyboard Shortcuts
+
+Bind these actions to keyboard shortcuts in Loop's keybind settings using their raw values:
+- `Maximize`
+- `Center`
+- `Minimize`
+- etc.
+
+## Properties
+
+General actions have specific computed property behaviors:
+
+<ResponseField name="shouldFillRadialMenu" type="Bool">
+  Returns `true` for: `.fullscreen`, `.maximize`, `.almostMaximize`, `.maximizeHeight`, `.maximizeWidth`, `.fillAvailableSpace`, and centering actions (line 106)
+  
+  When true, these actions fill the entire radial menu circle instead of occupying a specific angle.
+</ResponseField>
+
+<ResponseField name="hasRadialMenuAngle" type="Bool">
+  Returns `false` for: `.minimize`, `.minimizeOthers`, `.hide` (line 101-102)
+  
+  These actions don't appear in the radial menu's directional interface.
+</ResponseField>
+
+## Related Actions
+
+See also:
+- [Halves & Quarters](/api/halves-quarters) - For split-screen positioning
+- [Size Adjustment](/api/size-adjustment) - For incremental sizing
+- [WindowDirection Overview](/api/window-directions) - For complete action reference

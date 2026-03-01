@@ -1,0 +1,421 @@
+---
+title: Stash
+description: Hide windows at screen edges to declutter your workspace and reveal them with a hover or keybind
+icon: box-archive
+---
+
+## Overview
+
+Stash allows you to temporarily hide windows at the edges of your screen, keeping your workspace clean while maintaining quick access to important applications. Windows remain partially visible at the edge and automatically reveal when you hover near them or use a keybind.
+
+<video controls src="https://github.com/user-attachments/assets/080ba2fb-41b3-4b39-9000-a76f2fc794ed" />
+
+This feature is perfect for:
+- Monitoring apps (Activity Monitor, system stats)
+- Communication tools (Messages, Slack) that you check frequently
+- Reference materials you want nearby but not always visible
+- Music players or other utility apps
+
+## How Stashing Works
+
+When you stash a window, Loop moves it to a screen edge with only a small portion remaining visible. The window automatically reveals when your mouse approaches the edge and hides again when you move away.
+
+### Basic Usage
+
+<Steps>
+  <Step title="Create a stash action">
+    In Settings > Keybinds, create a new custom action with direction "Stash" and choose an edge (left, right, or bottom)
+  </Step>
+  
+  <Step title="Assign a keybind">
+    Record your keyboard shortcut (e.g., Trigger + S)
+  </Step>
+  
+  <Step title="Stash a window">
+    Focus the window you want to stash and press your keybind
+  </Step>
+  
+  <Step title="Reveal on demand">
+    Hover your mouse near the stashed edge to reveal the window, or press the same keybind again
+  </Step>
+</Steps>
+
+<Note>
+  Only one stashed window can be revealed at a time. Revealing a new window automatically hides the previously revealed one.
+</Note>
+
+## Stash Edges
+
+Loop supports stashing windows at three screen edges:
+
+<CardGroup cols={3}>
+  <Card title="Left Edge" icon="arrow-left">
+    Windows slide out from the left side of the screen
+  </Card>
+  <Card title="Right Edge" icon="arrow-right">
+    Windows slide out from the right side of the screen
+  </Card>
+  <Card title="Bottom Edge" icon="arrow-down">
+    Windows slide up from the bottom of the screen
+  </Card>
+</CardGroup>
+
+<Warning>
+  Top edge stashing is not currently supported due to macOS menu bar conflicts.
+</Warning>
+
+## Implementation Details
+
+Stash functionality is managed by the `StashManager` singleton class:
+
+```swift Loop/Stashing/StashManager.swift
+/// Manages the behavior of windows that can be temporarily hidden (stashed)
+/// and revealed on screen edges.
+final class StashManager {
+    static let shared = StashManager()
+    
+    /// How many pixels of the window should be visible when stashed
+    private var stashedWindowVisiblePadding: CGFloat {
+        Defaults[.stashedWindowVisiblePadding]
+    }
+    
+    /// Should the stashed windows be animated when revealed or hidden?
+    private var animate: Bool {
+        Defaults[.animateStashedWindows]
+    }
+}
+```
+
+### Mouse-Based Revealing
+
+StashManager listens for mouse movement events to reveal windows:
+
+```swift
+private func startListeningToRevealTriggers() {
+    let monitor = PassiveEventMonitor(
+        events: [
+            .mouseMoved,        // Normal mouse movement
+            .leftMouseDragged   // Dragging items to stashed windows
+        ],
+        callback: { [weak self] cgEvent in
+            self?.handleMouseMoved(cgEvent: cgEvent)
+        }
+    )
+    monitor.start()
+}
+```
+
+The system uses **debouncing** to avoid excessive processing:
+
+```swift
+/// The time interval to debounce mouse moved events
+private let mouseMovedDebounceInterval: TimeInterval = 0.05
+
+/// The throttle interval for revealing/hiding windows
+private let revealThrottleInterval: TimeInterval = 0.1
+```
+
+### Stashed vs Revealed Frames
+
+Each stashed window has two frame states:
+
+<CodeGroup>
+```swift Stashed Frame (Hidden)
+func computeStashedFrame(peekSize: CGFloat) -> CGRect {
+    // Window is mostly off-screen
+    // Only `peekSize` pixels remain visible
+    let frame = window.frame
+    switch action.stashEdge {
+    case .left:
+        frame.origin.x = screen.frame.minX - frame.width + peekSize
+    case .right:
+        frame.origin.x = screen.frame.maxX - peekSize
+    case .bottom:
+        frame.origin.y = screen.frame.maxY - peekSize
+    }
+    return frame
+}
+```
+
+```swift Revealed Frame (Visible)
+func computeRevealedFrame() -> CGRect {
+    // Window is fully on-screen
+    // Positioned at the edge according to the stash direction
+    return WindowFrameResolver.getFrame(
+        for: action,
+        window: window,
+        bounds: screen.cgSafeScreenFrame
+    )
+}
+```
+</CodeGroup>
+
+### Animation System
+
+Reveal and hide transitions can be animated:
+
+```swift
+private func revealWindow(_ window: StashedWindowInfo) async {
+    let frame = window.computeRevealedFrame()
+    
+    if animate {
+        try? await window.window.setFrameAnimated(
+            frame,
+            bounds: .zero
+        )
+    } else {
+        window.window.setFrame(frame)
+    }
+    
+    store.markWindowAsRevealed(window.window.cgWindowID)
+}
+```
+
+## Configuration Options
+
+<ParamField path="stashedWindowVisiblePadding" type="number" default="5" unit="pixels">
+  How many pixels of the stashed window remain visible at the screen edge. Increase for easier mouse targeting.
+</ParamField>
+
+<ParamField path="animateStashedWindows" type="toggle" default="true">
+  Enable smooth reveal/hide animations. Disable for instant transitions.
+</ParamField>
+
+<ParamField path="shiftFocusWhenStashed" type="toggle" default="false">
+  Automatically focus revealed windows and shift focus away when hiding. When disabled, windows reveal without stealing focus.
+</ParamField>
+
+## Multi-Screen Support
+
+StashManager intelligently handles multiple displays:
+
+```swift
+func getScreenForEdge(currentScreen: NSScreen, edge: StashEdge) -> NSScreen? {
+    // Two screens are considered in the same "row" or "column" 
+    // if they overlap by at least `threshold` points
+    let threshold: CGFloat = 100
+    
+    return switch edge {
+    case .left:
+        currentScreen.leftmostScreenInSameRow(overlapThreshold: threshold)
+    case .right:
+        currentScreen.rightmostScreenInSameRow(overlapThreshold: threshold)
+    case .bottom:
+        currentScreen.bottommostScreenInSameColumn(overlapThreshold: threshold)
+    }
+}
+```
+
+This ensures:
+- Left stash uses the leftmost screen in the same row
+- Right stash uses the rightmost screen in the same row  
+- Bottom stash uses the bottommost screen in the same column
+
+<Tip>
+  Treat all screens as a unified virtual space when stashing. Loop automatically finds the appropriate screen edge.
+</Tip>
+
+## Overlap Handling
+
+StashManager prevents overlapping stashed windows:
+
+```swift
+/// Two windows can be stacked along the same edge as long as there is
+/// enough non-overlapping space to allow the user to easily position 
+/// the cursor over either window.
+private let minimumVisibleSizeToKeepWindowStacked: CGFloat = 100
+
+private func unstashOverlappingWindows(_ windowToStash: StashedWindowInfo) {
+    for (id, stashedWindow) in store.stashed {
+        // If trying to stash in the same place as another window
+        if stashedWindow.action.id == windowToStash.action.id, 
+           stashedWindow.screen.isSameScreen(windowToStash.screen) {
+            // Replace the old window
+            unstash(stashedWindow, resetFrame: true, resetFrameAnimated: animate)
+        }
+    }
+}
+```
+
+<Note>
+  When you stash a window where another is already stashed, the original window is automatically unstashed and restored to its previous position.
+</Note>
+
+## Reveal Triggers
+
+Windows can be revealed in multiple ways:
+
+### 1. Mouse Proximity
+
+```swift
+private func isMouseOverStashed(window: StashedWindowInfo, location: CGPoint) -> Bool {
+    let stashedFrame = window.computeStashedFrame(peekSize: stashedWindowVisiblePadding)
+    return stashedFrame.contains(location)
+}
+```
+
+Move your mouse over the visible portion of the stashed window.
+
+### 2. Keybind Toggle
+
+```swift
+if store.isWindowRevealed(stashedWindow.window.cgWindowID) {
+    await hideWindow(stashedWindow)
+} else {
+    await revealWindow(stashedWindow)
+}
+```
+
+Press the same keybind that stashed the window to toggle reveal/hide.
+
+### 3. Application Activation
+
+```swift
+private func processFrontmostAppChange(with notification: Notification) {
+    // If a stashed window's application becomes active through
+    // non-mouse means (Spotlight, Cmd+Tab, etc.)
+    if appWindow.cgWindowID == window.window.cgWindowID {
+        await revealWindow(window)
+    }
+}
+```
+
+Activate the stashed application via Cmd+Tab or Spotlight.
+
+## Auto-Hide Behavior
+
+Revealed windows automatically hide when:
+
+```swift
+private func shouldHide(window: StashedWindowInfo, for location: CGPoint) -> Bool {
+    // Add tolerance to avoid hiding during minor cursor movement
+    let tolerance: CGFloat = 15
+    let revealedFrame = window.computeRevealedFrame().insetBy(dx: -tolerance, dy: -tolerance)
+    let stashedFrame = window.computeStashedFrame(peekSize: stashedWindowVisiblePadding)
+    
+    return !revealedFrame.contains(location) && !stashedFrame.contains(location)
+}
+```
+
+- Mouse moves away from the window (with tolerance)
+- Another window is focused (if `shiftFocusWhenStashed` is enabled)
+- You stash a different window
+
+## Persistence
+
+Stashed window states persist across app restarts:
+
+```swift
+func start() {
+    store.restore()  // Restore stashed windows from previous session
+}
+
+func onApplicationWillTerminate() {
+    // Move all stashed windows back on-screen before closing
+    restoreAllStashedWindows(animate: false)
+}
+```
+
+<Warning>
+  When Loop quits, all stashed windows are automatically restored to prevent "lost" windows.
+</Warning>
+
+## Unstashing Windows
+
+To permanently unstash a window:
+
+<Steps>
+  <Step title="Create an unstash action">
+    Add a new keybind with direction "Unstash"
+  </Step>
+  
+  <Step title="Focus the stashed window">
+    Reveal it using mouse hover or the stash keybind
+  </Step>
+  
+  <Step title="Trigger unstash">
+    Press your unstash keybind to restore the window to its original position
+  </Step>
+</Steps>
+
+Alternatively, moving or resizing a stashed window with Loop automatically unstashes it.
+
+## Advanced Features
+
+### Focus Management
+
+When `shiftFocusWhenStashed` is enabled:
+
+```swift
+private func unfocus(_ windowID: CGWindowID) {
+    // Find the first visible, non-stashed window on the same screen
+    let focusWindow = WindowUtility.windowList().first { window in
+        return store.stashed[window.cgWindowID] == nil
+            && window.cgWindowID != windowID
+            && !window.isApplicationHidden
+            && !window.isWindowHidden
+            && !window.minimized
+    }
+    
+    focusWindow?.focus()
+}
+```
+
+Loop automatically shifts focus to another window when hiding a stashed window.
+
+### Z-Index Sorting
+
+Multiple stashed windows are managed by z-order:
+
+```swift
+private func getZSortedStashedWindows() -> [StashedWindowInfo] {
+    // Leverage the fact that WindowEngine returns windows sorted by z-index
+    WindowUtility.windowList().compactMap { store.stashed[$0.cgWindowID] }
+}
+```
+
+If stashed windows overlap, only the topmost window reveals when you hover over the shared area.
+
+### Drag and Drop Support
+
+Stashed windows support drag and drop:
+
+```swift
+let monitor = PassiveEventMonitor(
+    events: [
+        .mouseMoved,
+        .leftMouseDragged  // Dragging items to stashed windows
+    ],
+    callback: { ... }
+)
+```
+
+Drag files or content to the stashed window edge to reveal and interact with it.
+
+## Use Cases
+
+<AccordionGroup>
+  <Accordion title="System Monitoring">
+    Stash Activity Monitor or system stats at the edge. Quickly glance when needed without cluttering your main workspace.
+  </Accordion>
+  
+  <Accordion title="Communication Apps">
+    Keep Messages or Slack stashed for quick replies while maintaining focus on your primary work.
+  </Accordion>
+  
+  <Accordion title="Music Control">
+    Stash your music player (Spotify, Apple Music) for easy access to playback controls.
+  </Accordion>
+  
+  <Accordion title="Reference Materials">
+    Stash documentation, calculators, or notes that you reference occasionally but don't need constantly visible.
+  </Accordion>
+  
+  <Accordion title="Terminal Sessions">
+    Stash a terminal window for quick command execution without switching spaces or minimizing.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Combine stash with different edges for different types of applications: communication on the left, monitoring on the right, utilities at the bottom.
+</Tip>

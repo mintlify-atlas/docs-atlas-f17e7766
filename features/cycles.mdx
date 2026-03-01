@@ -1,0 +1,327 @@
+---
+title: Cycles
+description: Create powerful action sequences that cycle through multiple window states with a single keybind
+icon: rotate
+---
+
+## Overview
+
+Cycles are one of Loop's most powerful features, enabling you to perform multiple window manipulations in quick succession by pressing the same key combination repeatedly or by left-clicking multiple times on the radial menu.
+
+<video controls src="https://github.com/user-attachments/assets/1adb1325-775d-4687-9085-71c7f775d65d" />
+
+Instead of memorizing different shortcuts for related actions (like thirds and halves on the same edge), you can create a cycle that transitions through them sequentially.
+
+## How Cycles Work
+
+A cycle is a sequence of window actions that Loop remembers on a per-window basis. Each time you trigger the same cycle keybind, Loop advances to the next action in the sequence.
+
+### Example Workflow
+
+Consider a cycle with these actions:
+1. Left Half
+2. Left Two Thirds
+3. Left Third
+
+<Steps>
+  <Step title="First press">
+    Trigger + C: Window moves to **left half**
+  </Step>
+  
+  <Step title="Second press">
+    Trigger + C: Window resizes to **left two thirds**
+  </Step>
+  
+  <Step title="Third press">
+    Trigger + C: Window shrinks to **left third**
+  </Step>
+  
+  <Step title="Fourth press">
+    Trigger + C: Cycle restarts at **left half**
+  </Step>
+</Steps>
+
+<Note>
+  Loop remembers where each window is in its cycle progression. Switching between windows maintains their individual cycle positions.
+</Note>
+
+## Creating Cycles
+
+Navigate to **Settings > Keybinds** to create custom cycles:
+
+<Steps>
+  <Step title="Add a new keybind">
+    Click "Add" in the Keybinds section
+  </Step>
+  
+  <Step title="Select 'Cycle' as the action">
+    Choose "Cycle" from the action type dropdown
+  </Step>
+  
+  <Step title="Name your cycle">
+    Give it a descriptive name (e.g., "Left Edge Sizes" or "Center Variations")
+  </Step>
+  
+  <Step title="Add cycle actions">
+    Click "Add" in the cycle configuration modal to add actions to the sequence
+  </Step>
+  
+  <Step title="Assign a keybind">
+    Record your keyboard shortcut
+  </Step>
+</Steps>
+
+## Configuration Options
+
+### Cycle Behavior Settings
+
+Navigate to **Settings > Keybinds > Cycles** to configure global cycle behavior:
+
+<ParamField path="Always start cycles from first item" type="toggle" default="false">
+  When enabled, every cycle activation starts from the first action instead of resuming from the last position. 
+  
+  **Default behavior**: Loop remembers each window's position in the cycle and resumes from there.
+</ParamField>
+
+<ParamField path="Cycle backward with Shift" type="toggle" default="false">
+  Hold Shift while triggering a cycle to move backward through the sequence.
+  
+  <Warning>
+    This option is only available if Shift is not part of your trigger key.
+  </Warning>
+</ParamField>
+
+## Implementation Details
+
+Cycles are implemented as a special `WindowAction` type with an array of child actions:
+
+```swift Loop/Window Management/Window Action/WindowAction.swift
+struct WindowAction {
+    var direction: WindowDirection
+    var cycle: [WindowAction]?  // Cycle-specific property
+    
+    /// Initializes a cycle without a name or keybind
+    init(_ cycle: [WindowAction]) {
+        self.id = UUID()
+        self.direction = .cycle
+        self.cycle = cycle
+    }
+    
+    /// Initializes a named cycle with keybind
+    init(_ name: String? = nil, cycle: [WindowAction], keybind: Set<CGKeyCode> = []) {
+        self.id = UUID()
+        self.direction = .cycle
+        self.name = name
+        self.cycle = cycle
+        self.keybind = keybind
+    }
+}
+```
+
+### Cycle Direction Check
+
+Cycles are identified by their direction:
+
+```swift
+if direction == .cycle {
+    result = if let name, !name.isEmpty {
+        name
+    } else {
+        .init(localized: .init("Custom Cycle", defaultValue: "Custom Cycle"))
+    }
+}
+```
+
+### Reverse Cycling Eligibility
+
+Only certain cycles support backward traversal:
+
+```swift
+var eligibleForReverseCycle: Bool {
+    direction == .cycle && !keybind.contains(.kVK_Shift)
+}
+```
+
+Cycles that use Shift in their keybind cannot support reverse cycling (since Shift is the reverse modifier).
+
+## Cycle Configuration View
+
+The cycle configuration interface is implemented in `CycleActionConfigurationView`:
+
+```swift Loop/Settings Window/Settings/Keybinds/Modal Views/CycleActionConfigurationView.swift
+struct CycleActionConfigurationView: View {
+    @Binding var windowAction: WindowAction
+    @State private var selectedKeybinds = Set<WindowAction>()
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Name field
+            LuminareTextField("Cycle Keybind", text: Binding(
+                get: { action.name ?? "" }, 
+                set: { action.name = $0 }
+            ))
+            
+            // Add/Remove buttons
+            Button("Add") {
+                if action.cycle == nil {
+                    action.cycle = []
+                }
+                action.cycle?.insert(.init(.noAction), at: 0)
+            }
+            
+            // List of cycle actions
+            LuminareList(items: $action.cycle) { item in
+                KeybindItemView(item, cycleIndex: ...)
+            }
+        }
+    }
+}
+```
+
+<Tip>
+  Cycle actions are displayed with their index number, making it easy to visualize the sequence.
+</Tip>
+
+## Use Cases
+
+### Progressive Resizing
+
+Create cycles that gradually resize windows:
+
+**Right Edge Progression:**
+1. Right Half → Right Two Thirds → Right Third
+
+**Maximize Variations:**
+1. Maximize → Almost Maximize → Center
+
+### Multi-Screen Workflows
+
+Combine screen switching with positioning:
+
+**Cross-Screen Cycle:**
+1. Right Half (current screen)
+2. Next Screen
+3. Left Half (new screen)
+4. Previous Screen
+
+### Vertical Stacking
+
+Cycle through vertical arrangements:
+
+**Vertical Layout Cycle:**
+1. Top Half
+2. Top Two Thirds  
+3. Maximize Height
+4. Center
+
+## Radial Menu Integration
+
+Cycles work seamlessly with the radial menu:
+
+- **Left-click**: Step forward through cycle actions
+- **Visual feedback**: The radial menu shows the current cycle action
+- **Angle display**: Each action in the cycle displays at its appropriate angle
+
+From the Radial Menu configuration documentation:
+
+<Note>
+  "Left-click to step through cycle actions." - Settings > Theming > Radial Menu > Actions
+</Note>
+
+## Per-Window Memory
+
+Loop tracks cycle state independently for each window:
+
+```swift
+// Conceptual implementation
+struct WindowRecords {
+    private static var cyclePositions: [CGWindowID: Int] = [:]
+    
+    static func getCyclePosition(for windowID: CGWindowID) -> Int {
+        return cyclePositions[windowID] ?? 0
+    }
+    
+    static func advanceCycle(for windowID: CGWindowID, in cycle: [WindowAction]) {
+        let currentPosition = getCyclePosition(for: windowID)
+        let nextPosition = (currentPosition + 1) % cycle.count
+        cyclePositions[windowID] = nextPosition
+    }
+}
+```
+
+This allows you to:
+- Have different windows at different points in the same cycle
+- Switch between windows without losing cycle state
+- Use the same cycle keybind across all applications
+
+## Advanced Configuration
+
+### Restart Behavior
+
+When **"Always start cycles from first item"** is enabled:
+
+```swift
+if Defaults[.cycleModeRestartEnabled] {
+    // Always start from index 0
+    currentCycleIndex = 0
+} else {
+    // Resume from last known position
+    currentCycleIndex = WindowRecords.getCyclePosition(for: window.id)
+}
+```
+
+This is useful for:
+- **Enabled**: Predictable, consistent behavior every time
+- **Disabled** (default): Contextual resizing that remembers your preferences
+
+### Backward Cycling
+
+When **"Cycle backward with Shift"** is enabled:
+
+```swift
+if pressedKeys.contains(.kVK_Shift) && action.eligibleForReverseCycle {
+    // Move backward through cycle
+    currentIndex = (currentIndex - 1 + cycle.count) % cycle.count
+} else {
+    // Move forward through cycle  
+    currentIndex = (currentIndex + 1) % cycle.count
+}
+```
+
+<Steps>
+  <Step title="Forward">
+    Trigger + C: Move to next action
+  </Step>
+  
+  <Step title="Backward">
+    Trigger + Shift + C: Move to previous action
+  </Step>
+</Steps>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Group related actions">
+    Keep cycle actions logically related (e.g., all left-edge positions, or all centering options).
+  </Accordion>
+  
+  <Accordion title="Limit cycle length">
+    3-5 actions per cycle is optimal. Longer cycles become hard to remember and use.
+  </Accordion>
+  
+  <Accordion title="Consider frequency">
+    Place your most-used action first in the cycle for quick access.
+  </Accordion>
+  
+  <Accordion title="Use descriptive names">
+    Name cycles clearly ("Left Sizes", "Vertical Stack") so you can identify them easily.
+  </Accordion>
+  
+  <Accordion title="Test your cycles">
+    Try out your cycle configurations with real workflows before committing to them.
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+  Combine cycles with the radial menu for maximum flexibility: use keybinds for your most frequent cycles, and the radial menu for occasional adjustments.
+</Tip>

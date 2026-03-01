@@ -1,0 +1,522 @@
+---
+title: 'AppleScript API'
+description: 'AppleScript automation reference for Loop window management'
+---
+
+## Overview
+
+Loop can be controlled via AppleScript using the `open location` command, which wraps Loop's URL scheme. This enables powerful automation and integration with macOS workflows.
+
+<Note>
+  AppleScript commands use Loop's URL scheme under the hood. All URL scheme commands can be executed via AppleScript.
+</Note>
+
+---
+
+## Basic Syntax
+
+AppleScript uses the `open location` command to invoke Loop's URL scheme:
+
+```applescript
+open location "loop://<command>/<parameters>"
+```
+
+### Alternative Syntax
+
+You can also use `osascript` from the command line:
+
+```bash
+osascript -e 'open location "loop://<command>/<parameters>"'
+```
+
+---
+
+## Activating Loop
+
+To bring Loop to the foreground:
+
+```applescript
+tell application "Loop" to activate
+```
+
+From Terminal:
+
+```bash
+osascript -e 'tell application "Loop" to activate'
+```
+
+---
+
+## Direction Commands
+
+Move or resize windows using directional commands.
+
+### Basic Directions
+
+```applescript
+-- Move window to left half
+open location "loop://direction/left"
+
+-- Move window to right half
+open location "loop://direction/right"
+
+-- Move window to top half
+open location "loop://direction/top"
+
+-- Move window to bottom half
+open location "loop://direction/bottom"
+
+-- Maximize window
+open location "loop://direction/maximize"
+
+-- Center window
+open location "loop://direction/center"
+```
+
+### Command Line Equivalents
+
+```bash
+# Move to left half
+osascript -e 'open location "loop://direction/left"'
+
+# Maximize window
+osascript -e 'open location "loop://direction/maximize"'
+```
+
+---
+
+## Screen Commands
+
+Move windows between multiple displays.
+
+```applescript
+-- Move window to next screen
+open location "loop://screen/next"
+
+-- Move window to previous screen
+open location "loop://screen/previous"
+```
+
+### Command Line Equivalents
+
+```bash
+# Move to next screen
+osascript -e 'open location "loop://screen/next"'
+
+# Move to previous screen
+osascript -e 'open location "loop://screen/previous"'
+```
+
+---
+
+## Action Commands
+
+Execute predefined or custom window actions.
+
+### Predefined Actions
+
+```applescript
+-- Maximize window
+open location "loop://action/maximize"
+
+-- Move to left half
+open location "loop://action/leftHalf"
+
+-- Center window
+open location "loop://action/center"
+
+-- Move to top-left quarter
+open location "loop://action/topLeft"
+```
+
+### Custom Actions
+
+```applescript
+-- Execute custom action (if defined in Loop)
+open location "loop://action/myCustomLayout"
+```
+
+### Command Line Equivalents
+
+```bash
+# Execute maximize action
+osascript -e 'open location "loop://action/maximize"'
+
+# Execute custom action
+osascript -e 'open location "loop://action/myCustomLayout"'
+```
+
+---
+
+## Keybind Commands
+
+Execute custom keybinds by name.
+
+```applescript
+-- Execute named keybind
+open location "loop://keybind/myCustomLayout"
+```
+
+### Command Line Equivalent
+
+```bash
+osascript -e 'open location "loop://keybind/myCustomLayout"'
+```
+
+---
+
+## List Commands
+
+Discover available commands, actions, and keybinds.
+
+```applescript
+-- List all available commands
+open location "loop://list/all"
+
+-- List all window actions
+open location "loop://list/actions"
+
+-- List all custom keybinds
+open location "loop://list/keybinds"
+```
+
+### Command Line Equivalents
+
+```bash
+# List all commands
+osascript -e 'open location "loop://list/all"'
+
+# List actions only
+osascript -e 'open location "loop://list/actions"'
+
+# List keybinds only
+osascript -e 'open location "loop://list/keybinds"'
+```
+
+<Note>
+  List commands open a temporary text file with the results, which auto-deletes after 60 seconds.
+</Note>
+
+---
+
+## Advanced AppleScript Examples
+
+### Sequential Actions
+
+Chain multiple commands together:
+
+```applescript
+-- Move window right, wait, then maximize
+open location "loop://direction/right"
+delay 0.5
+open location "loop://action/maximize"
+```
+
+### Conditional Window Management
+
+```applescript
+tell application "System Events"
+    set frontApp to name of first application process whose frontmost is true
+end tell
+
+if frontApp is "Safari" then
+    open location "loop://action/leftHalf"
+else if frontApp is "Terminal" then
+    open location "loop://action/rightHalf"
+end if
+```
+
+### Application-Specific Layouts
+
+```applescript
+-- Apply layout when opening specific app
+tell application "Xcode"
+    activate
+    delay 1
+end tell
+
+open location "loop://action/maximize"
+```
+
+### Multi-Window Layout
+
+```applescript
+-- Layout multiple windows
+tell application "Safari" to activate
+delay 0.3
+open location "loop://direction/left"
+
+tell application "Mail" to activate
+delay 0.3
+open location "loop://direction/right"
+```
+
+---
+
+## Shell Script Integration
+
+Create reusable shell scripts with AppleScript commands.
+
+### Example: Workspace Setup Script
+
+```bash
+#!/bin/bash
+# setup-workspace.sh
+# Set up development workspace layout
+
+# Open and position terminal on left
+open -a Terminal
+sleep 1
+osascript -e 'open location "loop://direction/left"'
+
+# Open and position browser on right
+open -a Safari
+sleep 1
+osascript -e 'open location "loop://direction/right"'
+
+echo "Workspace setup complete!"
+```
+
+### Example: Quick Window Positions
+
+```bash
+#!/bin/bash
+# quick-position.sh
+# Quick window positioning tool
+
+case "$1" in
+    left)
+        osascript -e 'open location "loop://direction/left"'
+        ;;
+    right)
+        osascript -e 'open location "loop://direction/right"'
+        ;;
+    max)
+        osascript -e 'open location "loop://action/maximize"'
+        ;;
+    *)
+        echo "Usage: $0 {left|right|max}"
+        exit 1
+        ;;
+esac
+```
+
+Usage:
+
+```bash
+chmod +x quick-position.sh
+./quick-position.sh left
+./quick-position.sh max
+```
+
+---
+
+## Keyboard Maestro Integration
+
+Use AppleScript in Keyboard Maestro macros.
+
+### Example Macro: Window to Left Half
+
+```applescript
+-- Action: Execute AppleScript
+open location "loop://direction/left"
+```
+
+### Example Macro: Execute Shell Script
+
+```bash
+# Action: Execute Shell Script
+osascript -e 'open location "loop://direction/right"'
+```
+
+---
+
+## BetterTouchTool Integration
+
+Create custom gestures and shortcuts.
+
+### Named Trigger
+
+```bash
+# In BetterTouchTool, create a "Execute Terminal Command" action:
+osascript -e 'open location "loop://action/maximize"'
+```
+
+---
+
+## Alfred Integration
+
+Create Alfred workflows for quick window management.
+
+### Workflow Script
+
+```bash
+# Alfred Script Filter with keyword "loop"
+query="{query}"
+osascript -e "open location \"loop://action/${query}\""
+```
+
+Usage in Alfred:
+- Type `loop maximize` to maximize window
+- Type `loop left` to move window left
+
+---
+
+## Automator Integration
+
+Create macOS Services with Automator.
+
+### Service: Move Window Left
+
+1. Open Automator
+2. Create new "Quick Action"
+3. Add "Run AppleScript" action:
+
+```applescript
+on run {input, parameters}
+    open location "loop://direction/left"
+    return input
+end run
+```
+
+4. Save as "Move Window Left"
+5. Access from Services menu or keyboard shortcut
+
+---
+
+## Error Handling
+
+### Try-Catch Blocks
+
+```applescript
+try
+    open location "loop://action/myCustomAction"
+on error errMsg
+    display dialog "Error: " & errMsg buttons {"OK"} default button 1
+end try
+```
+
+### Checking Application State
+
+```applescript
+tell application "System Events"
+    if not (exists process "Loop") then
+        tell application "Loop" to activate
+        delay 1
+    end if
+end tell
+
+open location "loop://direction/left"
+```
+
+---
+
+## Complete Script Examples
+
+### Development Workspace Setup
+
+```applescript
+-- setup-dev-workspace.applescript
+-- Complete development environment setup
+
+-- Open IDE
+tell application "Xcode"
+    activate
+    delay 1
+end tell
+open location "loop://direction/left"
+
+-- Open terminal
+tell application "Terminal"
+    activate
+    delay 1
+end tell
+open location "loop://action/topRight"
+
+-- Open browser
+tell application "Safari"
+    activate
+    delay 1
+end tell
+open location "loop://action/bottomRight"
+
+display notification "Development workspace ready!" with title "Loop Automation"
+```
+
+### Focus Mode
+
+```applescript
+-- focus-mode.applescript
+-- Enter focus mode with single maximized window
+
+-- Hide all windows except frontmost
+tell application "System Events"
+    set visible of every process whose visible is true and frontmost is false to false
+end tell
+
+-- Maximize frontmost window
+open location "loop://action/maximize"
+
+display notification "Focus mode activated" with title "Loop Automation"
+```
+
+### Screen-Based Layout
+
+```applescript
+-- screen-layout.applescript
+-- Apply layout based on number of screens
+
+tell application "System Events"
+    set screenCount to count of desktops
+end tell
+
+if screenCount > 1 then
+    -- Multi-screen: move to next screen
+    open location "loop://screen/next"
+    open location "loop://action/maximize"
+else
+    -- Single screen: use half layout
+    open location "loop://direction/left"
+end if
+```
+
+---
+
+## Command Reference
+
+| Command Type | AppleScript Syntax | Description |
+|--------------|-------------------|-------------|
+| Direction | `open location "loop://direction/<dir>"` | Move/resize window |
+| Screen | `open location "loop://screen/<next\|prev>"` | Move between displays |
+| Action | `open location "loop://action/<action>"` | Execute action |
+| Keybind | `open location "loop://keybind/<name>"` | Execute keybind |
+| List | `open location "loop://list/<type>"` | List commands |
+| Activate | `tell application "Loop" to activate` | Bring Loop to front |
+
+---
+
+## Best Practices
+
+<Tip>
+  **Add delays between commands** when chaining multiple actions to allow windows to finish positioning before the next command executes.
+</Tip>
+
+<Tip>
+  **Check application state** before executing commands to ensure Loop is running.
+</Tip>
+
+<Tip>
+  **Use try-catch blocks** for robust error handling in production scripts.
+</Tip>
+
+<Warning>
+  Commands operate on the frontmost window. Ensure proper window activation and timing when scripting multi-window layouts.
+</Warning>
+
+---
+
+## See Also
+
+- [URL Scheme API](/api/url-commands) - Complete URL command reference
+- [URL Scheme Guide](/advanced/url-scheme) - URL scheme automation guide
+- [Custom Actions](/configuration/custom-actions) - Creating custom window actions

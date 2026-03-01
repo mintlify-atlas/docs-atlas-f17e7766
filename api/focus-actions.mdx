@@ -1,0 +1,391 @@
+---
+title: 'Focus Actions'
+description: 'Navigate and switch focus between windows directionally'
+---
+
+## Overview
+
+Focus actions enable keyboard-driven navigation between windows based on their spatial relationship. Instead of cycling through windows with Cmd+Tab, you can move focus directionally (up, down, left, right) or through window stacking order.
+
+Defined in the static `focus` array (line 86):
+
+```swift
+static var focus: [WindowDirection] { 
+    [.focusUp, .focusDown, .focusRight, .focusLeft, 
+     .focusNextInStack] 
+}
+```
+
+## Computed Property
+
+<ResponseField name="willFocusWindow" type="Bool">
+  Returns `true` for all focus actions (line 96)
+  
+  ```swift
+  var willFocusWindow: Bool { 
+      WindowDirection.focus.contains(self) 
+  }
+  ```
+  
+  Used to identify actions that change window focus without resizing or moving the focused window.
+</ResponseField>
+
+## Directional Focus
+
+Directional focus actions move keyboard focus to the nearest window in the specified direction.
+
+### focusLeft
+
+<ParamField path="focusLeft" type="WindowDirection">
+  Moves focus to the nearest window positioned to the left.
+  
+  **Raw Value:** `"FocusLeft"`
+  
+  **URL Scheme:** `loop://FocusLeft`
+  
+  **Behavior:**
+  - Activates the window whose center point is nearest to the left
+  - Searches within the same screen/Space
+  - No effect if no window exists to the left
+  - Does not move or resize any windows
+  
+  **Navigation Direction:** `.left` (line 151)
+  
+  **Visual:**
+  ```
+  ┌────────┐  ┌────────┐  ┌────────┐
+  │ Window │  │Current │  │        │
+  │   A    │  │ (You)  │  │        │
+  └────────┘  └────────┘  └────────┘
+      ↑
+   Focus moves here
+  ```
+</ParamField>
+
+### focusRight
+
+<ParamField path="focusRight" type="WindowDirection">
+  Moves focus to the nearest window positioned to the right.
+  
+  **Raw Value:** `"FocusRight"`
+  
+  **URL Scheme:** `loop://FocusRight`
+  
+  **Behavior:**
+  - Activates the window whose center point is nearest to the right
+  - Searches within the same screen/Space
+  - No effect if no window exists to the right
+  - Does not move or resize any windows
+  
+  **Navigation Direction:** `.right` (line 152)
+  
+  **Visual:**
+  ```
+  ┌────────┐  ┌────────┐  ┌────────┐
+  │        │  │Current │  │ Window │
+  │        │  │ (You)  │  │   B    │
+  └────────┘  └────────┘  └────────┘
+                              ↑
+                       Focus moves here
+  ```
+</ParamField>
+
+### focusUp
+
+<ParamField path="focusUp" type="WindowDirection">
+  Moves focus to the nearest window positioned above.
+  
+  **Raw Value:** `"FocusUp"`
+  
+  **URL Scheme:** `loop://FocusUp`
+  
+  **Behavior:**
+  - Activates the window whose center point is nearest above
+  - Searches within the same screen/Space
+  - No effect if no window exists above
+  - Does not move or resize any windows
+  
+  **Navigation Direction:** `.top` (line 153)
+  
+  **Visual:**
+  ```
+       ┌────────┐
+       │ Window │ ← Focus moves here
+       │   C    │
+       └────────┘
+       ┌────────┐
+       │Current │
+       │ (You)  │
+       └────────┘
+  ```
+</ParamField>
+
+### focusDown
+
+<ParamField path="focusDown" type="WindowDirection">
+  Moves focus to the nearest window positioned below.
+  
+  **Raw Value:** `"FocusDown"`
+  
+  **URL Scheme:** `loop://FocusDown`
+  
+  **Behavior:**
+  - Activates the window whose center point is nearest below
+  - Searches within the same screen/Space
+  - No effect if no window exists below
+  - Does not move or resize any windows
+  
+  **Navigation Direction:** `.bottom` (line 154)
+  
+  **Visual:**
+  ```
+       ┌────────┐
+       │Current │
+       │ (You)  │
+       └────────┘
+       ┌────────┐
+       │ Window │ ← Focus moves here
+       │   D    │
+       └────────┘
+  ```
+</ParamField>
+
+## Stack-Based Focus
+
+### focusNextInStack
+
+<ParamField path="focusNextInStack" type="WindowDirection">
+  Moves focus to the next window in the stacking order.
+  
+  **Raw Value:** `"FocusNextInStack"`
+  
+  **URL Scheme:** `loop://FocusNextInStack`
+  
+  **Behavior:**
+  - Cycles through windows in z-order (front to back)
+  - Similar to Cmd+Tab but for visible windows only
+  - Wraps around to first window after reaching last
+  - Works within current screen/Space
+  - Does not move or resize any windows
+  
+  **Stacking Order:**
+  ```
+  Window 1 (Front) → Window 2 → Window 3 → Window 1 (cycles)
+  ```
+  
+  **Use Case:** Cycle through overlapping windows without spatial reasoning
+</ParamField>
+
+## Navigation Direction Mapping
+
+Focus actions map to `NavigationDirection` for internal routing (lines 149-157):
+
+```swift
+var focusDirection: NavigationDirection? {
+    switch self {
+    case .focusLeft: .left
+    case .focusRight: .right
+    case .focusUp: .top
+    case .focusDown: .bottom
+    default: nil
+    }
+}
+```
+
+This property enables directional window discovery algorithms.
+
+## Usage Examples
+
+### Vim-Style Navigation
+
+```bash
+# Navigate windows with directional keys
+open "loop://FocusLeft"   # h
+open "loop://FocusDown"   # j
+open "loop://FocusUp"     # k
+open "loop://FocusRight"  # l
+```
+
+Bind to keyboard shortcuts:
+- **Cmd+Ctrl+H:** Focus left
+- **Cmd+Ctrl+J:** Focus down
+- **Cmd+Ctrl+K:** Focus up
+- **Cmd+Ctrl+L:** Focus right
+
+### Multi-Window Workflow
+
+```bash
+# Navigate through a grid of windows
+# Layout:
+# ┌─────┬─────┬─────┐
+# │  1  │  2  │  3  │
+# ├─────┼─────┼─────┤
+# │  4  │  5  │  6  │
+# └─────┴─────┴─────┘
+
+# From window 5 (center):
+open "loop://FocusUp"     # → Window 2
+open "loop://FocusRight"  # → Window 3
+open "loop://FocusDown"   # → Window 6
+open "loop://FocusLeft"   # → Window 5
+```
+
+### Overlapping Windows
+
+```bash
+# Cycle through stacked windows on same position
+open "loop://FocusNextInStack"  # Next window in stack
+open "loop://FocusNextInStack"  # Next window in stack
+open "loop://FocusNextInStack"  # Cycles back to first
+```
+
+### Combining with Positioning
+
+Focus actions are particularly powerful when combined with window positioning:
+
+```bash
+# Focus and resize workflow
+open "loop://FocusLeft"     # Move focus to left window
+open "loop://LeftHalf"      # Resize it to left half
+
+open "loop://FocusRight"    # Move focus to right window
+open "loop://RightHalf"     # Resize it to right half
+```
+
+## Spatial Navigation Algorithm
+
+Directional focus uses spatial proximity to determine the target window:
+
+1. **Calculate center points** of all visible windows
+2. **Filter by direction** (e.g., for `focusLeft`, only windows with center X < current window center X)
+3. **Compute distances** from current window center to candidate window centers
+4. **Select nearest** window based on Euclidean distance
+5. **Activate** the target window
+
+### Edge Cases
+
+<AccordionGroup>
+  <Accordion title="Multiple windows at same distance">
+    When multiple windows are equidistant, Loop selects based on:
+    - Z-order (frontmost window preferred)
+    - Window size (larger windows preferred)
+  </Accordion>
+  
+  <Accordion title="No window in direction">
+    If no window exists in the specified direction:
+    - Focus remains on current window
+    - No visual feedback or error
+    - Can be combined with screen switching for cross-display navigation
+  </Accordion>
+  
+  <Accordion title="Diagonal window positions">
+    For windows positioned diagonally:
+    - Directional focus uses the primary axis (horizontal or vertical)
+    - May require two focus actions to reach diagonal windows
+    - Example: Focus right, then focus up
+  </Accordion>
+</AccordionGroup>
+
+## Radial Menu Behavior
+
+Focus actions don't have specific directional angles in the radial menu (line 102):
+
+```swift
+var hasRadialMenuAngle: Bool {
+    return !(... || willFocusWindow)
+}
+```
+
+They appear as menu options rather than directional triggers.
+
+## Keyboard-Driven Workflows
+
+Focus actions enable fully keyboard-driven window management:
+
+### Tiling Workflow
+
+1. **Focus** window with directional navigation
+2. **Position** window with positioning actions
+3. **Repeat** for all windows in layout
+
+### Quick Reference Layout
+
+```bash
+# Set up documentation + code + terminal layout
+# Start with browser (docs)
+open "loop://LeftTwoThirds"      # Browser: 66% left
+
+# Move to editor (code)
+open "loop://FocusRight"
+open "loop://TopRightQuarter"   # Editor: top-right 25%
+
+# Move to terminal
+open "loop://FocusDown"
+open "loop://BottomRightQuarter" # Terminal: bottom-right 25%
+```
+
+## Accessibility Benefits
+
+Focus actions provide significant accessibility advantages:
+
+- **Keyboard-only navigation:** No mouse required
+- **Spatial reasoning:** Intuitive directional movement
+- **Predictable behavior:** Consistent navigation patterns
+- **Fast context switching:** Direct window selection without cycling
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Focus doesn't move to expected window">
+    - Verify windows are on the same screen/Space
+    - Check if target window is minimized or hidden
+    - Ensure target window is actually positioned in the expected direction
+    - Hidden windows and minimized windows are excluded from focus navigation
+  </Accordion>
+  
+  <Accordion title="focusNextInStack cycles unexpectedly">
+    - Only visible windows are included in stack order
+    - Minimized and hidden windows are excluded
+    - Stack order reflects z-order, not window creation order
+  </Accordion>
+  
+  <Accordion title="Focus action has no effect">
+    - No window exists in the specified direction
+    - Current window is the only visible window
+    - Target window may be on a different screen (use screen switching first)
+  </Accordion>
+</AccordionGroup>
+
+## Related Actions
+
+<CardGroup cols={2}>
+  <Card title="Screen Switching" href="/api/screen-switching">
+    Move focus to windows on other displays
+  </Card>
+  
+  <Card title="General Actions" href="/api/general-actions">
+    Minimize and hide windows
+  </Card>
+  
+  <Card title="Size Adjustment" href="/api/size-adjustment">
+    Move windows after focusing them
+  </Card>
+  
+  <Card title="WindowDirection Overview" href="/api/window-directions">
+    Complete action reference
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Tip>
+  **Combine with positioning:** Use focus actions to select a window, then immediately apply a positioning action. This creates powerful keyboard-driven workflows.
+</Tip>
+
+<Tip>
+  **Consistent keybinds:** Map focus actions to easily reachable key combinations. Vim-style HJKL or arrow key combinations work well.
+</Tip>
+
+<Tip>
+  **Multi-step navigation:** For complex layouts, use multiple focus actions in sequence to reach distant windows efficiently.
+</Tip>

@@ -1,0 +1,99 @@
+---
+title: Development Setup
+description: Set up your development environment to contribute to Loop
+---
+
+This guide will walk you through setting up Loop for local development on macOS.
+
+## Prerequisites
+
+Before you begin, ensure you have:
+
+- A Mac running macOS
+- Xcode installed
+- An Apple Developer account (free account works fine)
+- Git installed
+
+## Setup Steps
+
+<Steps>
+  <Step title="Fork the repository">
+    Forking creates a personal copy of the Loop repository under your GitHub account. This allows you to make changes without affecting the original project.
+
+    1. Go to the [Loop repository](https://github.com/MrKai77/Loop) on GitHub
+    2. Click the "Fork" button at the top right of the screen
+    3. You should see `Loop forked from MrKai77/Loop` on your forked repository page
+  </Step>
+
+  <Step title="Clone your fork">
+    Clone your forked repository to your local machine:
+
+    ```bash
+    cd ~/Downloads  # Or your preferred directory
+    git clone https://github.com/{your-username}/Loop.git
+    cd Loop
+    open Loop.xcodeproj
+    ```
+
+    Replace `{your-username}` with your actual GitHub username. The project will automatically open in Xcode.
+  </Step>
+
+  <Step title="Set up your Apple Developer account">
+    If you already have an Apple Developer account configured in Xcode, skip this step.
+
+    1. Enroll your account in the Developer Program at [developer.apple.com](https://developer.apple.com/) (free account works)
+    2. Open Xcode and navigate to `Xcode → Preferences` in the menu bar
+    3. Click the `Accounts` tab
+    4. Add your Apple ID to Xcode
+    5. Select your account from the list on the left
+    6. Click `Manage Certificates...` at the bottom
+    7. Click the **+** icon and select `Apple Development`
+    8. When `Apple Development Certificates` appears in the list, press `Done`
+  </Step>
+
+  <Step title="Sign Loop with your developer account">
+    Configure Xcode to sign the Loop app with your developer certificate:
+
+    1. Wait for all dependencies to resolve (this may take a few minutes)
+    2. In the file browser on the left, click `Loop` at the very top (icon with App Store logo)
+    3. In the pane on the right, click `Signing & Capabilities` at the top
+    4. Under `Signing`, change the `Team` dropdown to your Apple ID
+    5. Under `Signing → macOS`, change the `Signing Certificate` to `Development`
+  </Step>
+
+  <Step title="Build and run Loop">
+    Test that everything is set up correctly:
+
+    1. Press <kbd>⌘</kbd> + <kbd>R</kbd> to build and run Loop
+    2. If successful, you'll see an alert that Loop requires Accessibility permissions
+    3. For simple code changes, you don't need to enable these permissions
+    4. For changes to Loop's movement or core functionality, you'll need to grant Accessibility access
+  </Step>
+
+  <Step title="Install SwiftFormat">
+    SwiftFormat is **required** for all contributions to ensure consistent code formatting.
+
+    Install SwiftFormat using Homebrew:
+
+    ```bash
+    brew install swiftformat
+    ```
+
+    Before submitting any PR, format your code:
+
+    ```bash
+    swiftformat .
+    ```
+
+    <Warning>
+    PRs with incorrect formatting will be automatically rejected by our CI checks.
+    </Warning>
+  </Step>
+</Steps>
+
+## Next Steps
+
+Now that your environment is set up, learn about:
+
+- [Code Guidelines](/contributing/code-guidelines) - Our coding standards and contribution process
+- [Opening Issues](https://github.com/MrKai77/Loop/issues) - Propose your changes before starting work

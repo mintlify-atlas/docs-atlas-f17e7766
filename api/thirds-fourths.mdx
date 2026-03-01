@@ -1,0 +1,480 @@
+---
+title: 'Thirds & Fourths Positioning'
+description: 'Precise window positioning in thirds and fourths of screen space'
+---
+
+## Overview
+
+Thirds and fourths provide more granular window positioning than halves, enabling precise layouts for multi-window workflows. These actions divide the screen into thirds (33.33%) or fourths (25%) along horizontal or vertical axes.
+
+## Horizontal Thirds
+
+Defined in the static `horizontalThirds` array (line 78):
+
+```swift
+static var horizontalThirds: [WindowDirection] { 
+    [.rightThird, .rightTwoThirds, .horizontalCenterThird, 
+     .leftTwoThirds, .leftThird] 
+}
+```
+
+### Single Third Columns
+
+<ParamField path="leftThird" type="WindowDirection">
+  Positions window in the left third of the screen.
+  
+  **Raw Value:** `"LeftThird"`
+  
+  **URL Scheme:** `loop://LeftThird`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 1.0/3.0, height: 1.0)` (line 130)
+  
+  **Visual:**
+  ```
+  ┌─────┬─────┬─────┐
+  │     │     │     │
+  │ Win │     │     │
+  │33.3%│     │     │
+  │     │     │     │
+  └─────┴─────┴─────┘
+  ```
+</ParamField>
+
+<ParamField path="horizontalCenterThird" type="WindowDirection">
+  Positions window in the center third of the screen horizontally.
+  
+  **Raw Value:** `"HorizontalCenterThird"`
+  
+  **URL Scheme:** `loop://HorizontalCenterThird`
+  
+  **Frame Values:** `CGRect(x: 1.0/3.0, y: 0, width: 1.0/3.0, height: 1.0)` (line 129)
+  
+  **Visual:**
+  ```
+  ┌─────┬─────┬─────┐
+  │     │     │     │
+  │     │ Win │     │
+  │     │33.3%│     │
+  │     │     │     │
+  └─────┴─────┴─────┘
+  ```
+</ParamField>
+
+<ParamField path="rightThird" type="WindowDirection">
+  Positions window in the right third of the screen.
+  
+  **Raw Value:** `"RightThird"`
+  
+  **URL Scheme:** `loop://RightThird`
+  
+  **Frame Values:** `CGRect(x: 2.0/3.0, y: 0, width: 1.0/3.0, height: 1.0)` (line 127)
+  
+  **Visual:**
+  ```
+  ┌─────┬─────┬─────┐
+  │     │     │     │
+  │     │     │ Win │
+  │     │     │33.3%│
+  │     │     │     │
+  └─────┴─────┴─────┘
+  ```
+</ParamField>
+
+### Two-Thirds Columns
+
+<ParamField path="leftTwoThirds" type="WindowDirection">
+  Positions window occupying the left two-thirds of the screen.
+  
+  **Raw Value:** `"LeftTwoThirds"`
+  
+  **URL Scheme:** `loop://LeftTwoThirds`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 2.0/3.0, height: 1.0)` (line 131)
+  
+  **Visual:**
+  ```
+  ┌───────────┬─────┐
+  │           │     │
+  │  Window   │     │
+  │   66.6%   │     │
+  │           │     │
+  └───────────┴─────┘
+  ```
+  
+  **Use Case:** Main content area with sidebar on right
+</ParamField>
+
+<ParamField path="rightTwoThirds" type="WindowDirection">
+  Positions window occupying the right two-thirds of the screen.
+  
+  **Raw Value:** `"RightTwoThirds"`
+  
+  **URL Scheme:** `loop://RightTwoThirds`
+  
+  **Frame Values:** `CGRect(x: 1.0/3.0, y: 0, width: 2.0/3.0, height: 1.0)` (line 128)
+  
+  **Visual:**
+  ```
+  ┌─────┬───────────┐
+  │     │           │
+  │     │  Window   │
+  │     │   66.6%   │
+  │     │           │
+  └─────┴───────────┘
+  ```
+  
+  **Use Case:** Main content area with sidebar on left
+</ParamField>
+
+## Vertical Thirds
+
+Defined in the static `verticalThirds` array (line 79):
+
+```swift
+static var verticalThirds: [WindowDirection] { 
+    [.topThird, .topTwoThirds, .verticalCenterThird, 
+     .bottomTwoThirds, .bottomThird] 
+}
+```
+
+### Single Third Rows
+
+<ParamField path="topThird" type="WindowDirection">
+  Positions window in the top third of the screen.
+  
+  **Raw Value:** `"TopThird"`
+  
+  **URL Scheme:** `loop://TopThird`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 1.0, height: 1.0/3.0)` (line 133)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │   Window  33.3%   │
+  ├───────────────────┤
+  │                   │
+  ├───────────────────┤
+  │                   │
+  └───────────────────┘
+  ```
+</ParamField>
+
+<ParamField path="verticalCenterThird" type="WindowDirection">
+  Positions window in the center third of the screen vertically.
+  
+  **Raw Value:** `"VerticalCenterThird"`
+  
+  **URL Scheme:** `loop://VerticalCenterThird`
+  
+  **Frame Values:** `CGRect(x: 0, y: 1.0/3.0, width: 1.0, height: 1.0/3.0)` (line 135)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │                   │
+  ├───────────────────┤
+  │   Window  33.3%   │
+  ├───────────────────┤
+  │                   │
+  └───────────────────┘
+  ```
+</ParamField>
+
+<ParamField path="bottomThird" type="WindowDirection">
+  Positions window in the bottom third of the screen.
+  
+  **Raw Value:** `"BottomThird"`
+  
+  **URL Scheme:** `loop://BottomThird`
+  
+  **Frame Values:** `CGRect(x: 0, y: 2.0/3.0, width: 1.0, height: 1.0/3.0)` (line 136)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │                   │
+  ├───────────────────┤
+  │                   │
+  ├───────────────────┤
+  │   Window  33.3%   │
+  └───────────────────┘
+  ```
+</ParamField>
+
+### Two-Thirds Rows
+
+<ParamField path="topTwoThirds" type="WindowDirection">
+  Positions window occupying the top two-thirds of the screen.
+  
+  **Raw Value:** `"TopTwoThirds"`
+  
+  **URL Scheme:** `loop://TopTwoThirds`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 1.0, height: 2.0/3.0)` (line 134)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │                   │
+  │   Window  66.6%   │
+  │                   │
+  ├───────────────────┤
+  │                   │
+  └───────────────────┘
+  ```
+  
+  **Use Case:** Main workspace with status bar or controls at bottom
+</ParamField>
+
+<ParamField path="bottomTwoThirds" type="WindowDirection">
+  Positions window occupying the bottom two-thirds of the screen.
+  
+  **Raw Value:** `"BottomTwoThirds"`
+  
+  **URL Scheme:** `loop://BottomTwoThirds`
+  
+  **Frame Values:** `CGRect(x: 0, y: 1.0/3.0, width: 1.0, height: 2.0/3.0)` (line 137)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │                   │
+  ├───────────────────┤
+  │                   │
+  │   Window  66.6%   │
+  │                   │
+  └───────────────────┘
+  ```
+  
+  **Use Case:** Main workspace with toolbar or menu at top
+</ParamField>
+
+## Horizontal Fourths
+
+Defined in the static `horizontalFourths` array (line 80):
+
+```swift
+static var horizontalFourths: [WindowDirection] { 
+    [.firstFourth, .secondFourth, .thirdFourth, .fourthFourth, 
+     .leftThreeFourths, .rightThreeFourths] 
+}
+```
+
+### Quarter-Width Columns
+
+<ParamField path="firstFourth" type="WindowDirection">
+  Positions window in the first (leftmost) fourth of the screen.
+  
+  **Raw Value:** `"FirstFourth"`
+  
+  **URL Scheme:** `loop://FirstFourth`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 1.0/4.0, height: 1.0)` (line 139)
+  
+  **Visual:**
+  ```
+  ┌────┬────┬────┬────┐
+  │    │    │    │    │
+  │Win │    │    │    │
+  │25% │    │    │    │
+  └────┴────┴────┴────┘
+  ```
+</ParamField>
+
+<ParamField path="secondFourth" type="WindowDirection">
+  Positions window in the second fourth of the screen.
+  
+  **Raw Value:** `"SecondFourth"`
+  
+  **URL Scheme:** `loop://SecondFourth`
+  
+  **Frame Values:** `CGRect(x: 1.0/4.0, y: 0, width: 1.0/4.0, height: 1.0)` (line 140)
+  
+  **Visual:**
+  ```
+  ┌────┬────┬────┬────┐
+  │    │    │    │    │
+  │    │Win │    │    │
+  │    │25% │    │    │
+  └────┴────┴────┴────┘
+  ```
+</ParamField>
+
+<ParamField path="thirdFourth" type="WindowDirection">
+  Positions window in the third fourth of the screen.
+  
+  **Raw Value:** `"ThirdFourth"`
+  
+  **URL Scheme:** `loop://ThirdFourth`
+  
+  **Frame Values:** `CGRect(x: 2.0/4.0, y: 0, width: 1.0/4.0, height: 1.0)` (line 141)
+  
+  **Visual:**
+  ```
+  ┌────┬────┬────┬────┐
+  │    │    │    │    │
+  │    │    │Win │    │
+  │    │    │25% │    │
+  └────┴────┴────┴────┘
+  ```
+</ParamField>
+
+<ParamField path="fourthFourth" type="WindowDirection">
+  Positions window in the fourth (rightmost) fourth of the screen.
+  
+  **Raw Value:** `"FourthFourth"`
+  
+  **URL Scheme:** `loop://FourthFourth`
+  
+  **Frame Values:** `CGRect(x: 3.0/4.0, y: 0, width: 1.0/4.0, height: 1.0)` (line 142)
+  
+  **Visual:**
+  ```
+  ┌────┬────┬────┬────┐
+  │    │    │    │    │
+  │    │    │    │Win │
+  │    │    │    │25% │
+  └────┴────┴────┴────┘
+  ```
+</ParamField>
+
+### Three-Fourths Width
+
+<ParamField path="leftThreeFourths" type="WindowDirection">
+  Positions window occupying the left three-fourths of the screen.
+  
+  **Raw Value:** `"LeftThreeFourths"`
+  
+  **URL Scheme:** `loop://LeftThreeFourths`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 3.0/4.0, height: 1.0)` (line 143)
+  
+  **Visual:**
+  ```
+  ┌──────────────┬────┐
+  │              │    │
+  │   Window     │    │
+  │    75%       │    │
+  │              │    │
+  └──────────────┴────┘
+  ```
+  
+  **Use Case:** Large main workspace with narrow sidebar
+</ParamField>
+
+<ParamField path="rightThreeFourths" type="WindowDirection">
+  Positions window occupying the right three-fourths of the screen.
+  
+  **Raw Value:** `"RightThreeFourths"`
+  
+  **URL Scheme:** `loop://RightThreeFourths`
+  
+  **Frame Values:** `CGRect(x: 1.0/4.0, y: 0, width: 3.0/4.0, height: 1.0)` (line 144)
+  
+  **Visual:**
+  ```
+  ┌────┬──────────────┐
+  │    │              │
+  │    │   Window     │
+  │    │    75%       │
+  │    │              │
+  └────┴──────────────┘
+  ```
+  
+  **Use Case:** Large main workspace with narrow sidebar
+</ParamField>
+
+## Layout Examples
+
+### Three-Column Layout (Thirds)
+
+```bash
+# Create three equal columns
+open "loop://LeftThird"            # Window 1: Column 1
+open "loop://HorizontalCenterThird" # Window 2: Column 2
+open "loop://RightThird"           # Window 3: Column 3
+```
+
+```
+┌─────┬─────┬─────┐
+│  1  │  2  │  3  │
+│33.3%│33.3%│33.3%│
+└─────┴─────┴─────┘
+```
+
+### Main + Sidebar Layout (Two-Thirds)
+
+```bash
+# Main content with right sidebar
+open "loop://LeftTwoThirds"  # Main content: 66.6%
+open "loop://RightThird"     # Sidebar: 33.3%
+```
+
+```
+┌───────────┬─────┐
+│   Main    │Side │
+│   66.6%   │33.3%│
+└───────────┴─────┘
+```
+
+### Four-Column Layout (Fourths)
+
+```bash
+# Create four equal columns
+open "loop://FirstFourth"   # Window 1
+open "loop://SecondFourth"  # Window 2
+open "loop://ThirdFourth"   # Window 3
+open "loop://FourthFourth"  # Window 4
+```
+
+```
+┌────┬────┬────┬────┐
+│ 1  │ 2  │ 3  │ 4  │
+│25% │25% │25% │25% │
+└────┴────┴────┴────┘
+```
+
+### Asymmetric Layout (Three-Fourths)
+
+```bash
+# Large main area with small sidebar
+open "loop://LeftThreeFourths"  # Main: 75%
+open "loop://FourthFourth"      # Sidebar: 25%
+```
+
+```
+┌──────────────┬────┐
+│     Main     │Side│
+│     75%      │25% │
+└──────────────┴────┘
+```
+
+## Precision Comparison
+
+| Division | Size | Use Case |
+|----------|------|----------|
+| **Halves** | 50% | Basic split-screen |
+| **Thirds** | 33.3% / 66.6% | Asymmetric layouts |
+| **Quarters** | 25% | Grid layouts |
+| **Fourths** | 25% / 75% | Main + small sidebar |
+
+## Related Actions
+
+<CardGroup cols={2}>
+  <Card title="Halves & Quarters" href="/api/halves-quarters">
+    Simpler split-screen layouts
+  </Card>
+  
+  <Card title="Size Adjustment" href="/api/size-adjustment">
+    Fine-tune window dimensions
+  </Card>
+  
+  <Card title="General Actions" href="/api/general-actions">
+    Maximize and fill actions
+  </Card>
+  
+  <Card title="WindowDirection Overview" href="/api/window-directions">
+    Complete action reference
+  </Card>
+</CardGroup>

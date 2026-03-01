@@ -1,0 +1,120 @@
+---
+title: "Quickstart"
+description: "Get started with Loop and perform your first window action"
+icon: "rocket"
+---
+
+Get Loop up and running in minutes and perform your first window management action.
+
+## Initial setup
+
+<Steps>
+  <Step title="Install Loop">
+    If you haven't installed Loop yet, follow the [installation guide](/getting-started/installation) to get started.
+  </Step>
+  <Step title="Launch Loop">
+    Open Loop from your Applications folder or use Spotlight search (⌘ + Space, then type "Loop").
+  </Step>
+  <Step title="Grant accessibility permissions">
+    When prompted, grant Loop accessibility permissions in System Settings. This allows Loop to manage your windows.
+
+    1. Click **Open System Settings** when prompted
+    2. Enable the toggle next to Loop
+    3. You may need to restart Loop for changes to take effect
+  </Step>
+  <Step title="Set up your trigger key">
+    The trigger key is essential for activating Loop's features. You can access trigger key settings in the **Behavior** tab of Loop's settings.
+
+    <Info>
+      The trigger key can consist of one or multiple modifier keys. Many users prefer using Caps Lock as their trigger key.
+    </Info>
+
+    See the [trigger key configuration guide](/getting-started/trigger-key) for detailed setup instructions.
+  </Step>
+</Steps>
+
+## Your first window action
+
+Now that Loop is set up, try your first window management action:
+
+<Steps>
+  <Step title="Open an application window">
+    Open any application window (Safari, Finder, etc.) that you want to resize or move.
+  </Step>
+  <Step title="Activate the radial menu">
+    Hold down your trigger key and move your cursor. The radial menu will appear, showing different window placement options.
+
+    <Tip>
+      Move your cursor in different directions while holding the trigger key to see the various window positioning options.
+    </Tip>
+  </Step>
+  <Step title="Choose a window position">
+    While still holding the trigger key, move your cursor in the direction you want to position the window:
+    - **Left**: Snap window to left half
+    - **Right**: Snap window to right half
+    - **Up**: Snap window to top half
+    - **Down**: Snap window to bottom half
+    - **Corners**: Snap window to quarters
+  </Step>
+  <Step title="Release to apply">
+    Release the trigger key to apply the window action. Your window will instantly resize and move to the selected position.
+  </Step>
+</Steps>
+
+<Check>
+  You've performed your first window action with Loop!
+</Check>
+
+## How Loop works
+
+Loop uses a trigger key to function. This key must be held down or pressed to activate features within Loop:
+
+- **Radial menu**: Hold down the trigger key and move the cursor in the desired direction to resize and position windows
+- **Keyboard shortcuts**: Assign keys to work with the trigger key for specific actions (e.g., trigger key + arrow keys)
+- **Preview window**: See the resize action before committing to it
+
+## Alternative control methods
+
+Beyond the radial menu, Loop supports several control methods:
+
+### Keyboard shortcuts
+
+Assign any key combination with your trigger key to perform specific window actions. Configure these in Loop's settings under the **Keybinds** tab.
+
+### Shell and AppleScript
+
+Loop can be controlled via shell commands or AppleScript using its URL scheme:
+
+```bash
+# Shell examples
+open "loop://direction/right"     # Move window to right half
+open "loop://action/maximize"     # Maximize window
+open "loop://screen/next"         # Move to next screen
+```
+
+```applescript
+# AppleScript examples
+osascript -e 'tell application "Loop" to activate'
+osascript -e 'open location "loop://direction/left"'
+```
+
+For a complete list of available commands:
+
+```bash
+open "loop://list/all"           # List all commands
+open "loop://list/actions"       # List window actions
+open "loop://list/keybinds"      # List custom keybinds
+```
+
+## Next steps
+
+Explore Loop's powerful features:
+
+<Columns cols={2}>
+  <Card title="Trigger key setup" icon="keyboard" href="/getting-started/trigger-key">
+    Learn advanced trigger key configuration options
+  </Card>
+  <Card title="Features" icon="sparkles" href="/features">
+    Discover all of Loop's window management capabilities
+  </Card>
+</Columns>

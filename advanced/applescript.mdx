@@ -1,0 +1,135 @@
+---
+title: AppleScript Integration
+description: Control Loop using AppleScript for macOS automation
+---
+
+Loop can be controlled using AppleScript, allowing you to integrate window management into your macOS automation workflows.
+
+## Basic AppleScript Commands
+
+### Activating Loop
+
+Bring Loop to the foreground:
+
+```applescript
+tell application "Loop" to activate
+```
+
+**Shell execution:**
+
+```bash
+osascript -e 'tell application "Loop" to activate'
+```
+
+### URL Scheme Integration
+
+Execute Loop commands using the URL scheme:
+
+```applescript
+open location "loop://direction/left"
+```
+
+**Shell execution:**
+
+```bash
+osascript -e 'open location "loop://direction/left"'
+```
+
+## Common Use Cases
+
+### Window Positioning
+
+Move windows to specific positions:
+
+```bash
+# Move window to right half
+osascript -e 'open location "loop://direction/right"'
+
+# Move window to left half
+osascript -e 'open location "loop://direction/left"'
+
+# Maximize window
+osascript -e 'open location "loop://action/maximize"'
+```
+
+### Screen Management
+
+Move windows between displays:
+
+```bash
+# Move to next screen
+osascript -e 'open location "loop://screen/next"'
+
+# Move to previous screen
+osascript -e 'open location "loop://screen/previous"'
+```
+
+## Integration with Other Tools
+
+### Keyboard Maestro
+
+Create a Keyboard Maestro macro that executes AppleScript:
+
+1. Create a new macro
+2. Add "Execute AppleScript" action
+3. Use the AppleScript command:
+
+```applescript
+open location "loop://direction/right"
+```
+
+### Alfred Workflows
+
+Create an Alfred workflow that runs AppleScript:
+
+1. Create a new workflow
+2. Add a "Run Script" action
+3. Set language to "AppleScript"
+4. Add your Loop commands
+
+### Automator
+
+Create Automator workflows with Loop commands:
+
+1. Create a new Automator workflow
+2. Add "Run AppleScript" action
+3. Include Loop URL scheme commands
+
+## Shell Scripts
+
+Combine AppleScript with shell scripts for more complex automation:
+
+```bash
+#!/bin/bash
+
+# Activate Loop
+osascript -e 'tell application "Loop" to activate'
+
+# Execute window command
+osascript -e 'open location "loop://direction/right"'
+```
+
+## Tips
+
+<Tip>
+All Loop URL scheme commands can be executed through AppleScript using the `open location` syntax.
+</Tip>
+
+<Tip>
+For quick one-off commands, use `osascript -e` directly from the terminal.
+</Tip>
+
+<Tip>
+Chain multiple commands together in a single AppleScript or shell script for complex workflows.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="URL Scheme Reference" icon="link" href="/advanced/url-scheme">
+    Complete URL command reference
+  </Card>
+  <Card title="Scripting Examples" icon="code" href="/advanced/scripting-examples">
+    Real-world automation examples
+  </Card>
+</CardGroup>

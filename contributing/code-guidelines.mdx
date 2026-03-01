@@ -1,0 +1,153 @@
+---
+title: Code Guidelines
+description: Coding standards and contribution guidelines for Loop
+---
+
+Follow these guidelines to ensure your code contributions meet Loop's quality standards and can be smoothly integrated into the project.
+
+## Opening an Issue
+
+Before writing any code, you need to communicate your plans with the maintainers:
+
+<Steps>
+  <Step title="Create an issue">
+    1. Go to the [Issues tab](https://github.com/MrKai77/Loop/issues) on GitHub
+    2. Click "New issue"
+    3. Clearly articulate the change, addition, or improvement you want to make
+    4. Explain the scope and purpose of your proposed work
+  </Step>
+
+  <Step title="Wait for maintainer approval">
+    Wait for a response from a maintainer. This helps:
+    - Avoid conflicts with ongoing development
+    - Ensure your work aligns with Loop's direction
+    - Prevent duplicate efforts
+
+    Once your issue is accepted, you're ready to start coding!
+  </Step>
+</Steps>
+
+## Code Formatting
+
+### SwiftFormat Requirement
+
+**IMPORTANT:** You **must** have [SwiftFormat](https://github.com/nicklockwood/SwiftFormat) installed.
+
+Before submitting your PR, run:
+
+```bash
+swiftformat .
+```
+
+A formatting check runs automatically on every PR. If formatting is incorrect, your PR will be rejected.
+
+### Code Documentation Standards
+
+All code **must** include comprehensive comments. Proper documentation helps other contributors understand your code and makes maintenance easier.
+
+<CodeGroup>
+```swift Good Example
+/// Determines if two colors are similar based on a threshold.
+/// - Parameters:
+///   - color: The color to compare with the receiver.
+///   - threshold: The maximum allowed difference between color components.
+/// - Returns: A Boolean value indicating whether the two colors are similar.
+func isSimilar(to color: NSColor, threshold: CGFloat = 0.1) -> Bool {
+    // Convert both colors to the RGB color space for comparison.
+    guard let color1 = usingColorSpace(.deviceRGB),
+          let color2 = color.usingColorSpace(.deviceRGB)
+    else {
+        return false
+    }
+
+    // Compare the red, green, and blue components of both colors.
+    return abs(color1.redComponent - color2.redComponent) < threshold &&
+        abs(color1.greenComponent - color2.greenComponent) < threshold &&
+        abs(color1.blueComponent - color2.blueComponent) < threshold
+}
+```
+
+```swift Bad Example
+// Compares to another and returns a boolean
+func isSimilar(to color: NSColor, threshold: CGFloat = 0.1) -> Bool { ... }
+```
+</CodeGroup>
+
+**Good documentation includes:**
+- A clear description of what the function/class does
+- Parameter documentation with types and purposes
+- Return value documentation
+- Inline comments explaining complex logic
+
+## Low-Effort Contributions
+
+While we appreciate all interest in improving Loop, low-effort pull requests may be closed.
+
+**Examples of low-effort contributions:**
+- Fixing a single typo or grammatical error
+- Rewording an existing localization string
+- Changing or adding one-line comments without meaningful impact
+- Minor one-liners that don't meaningfully affect logic, behavior, or maintainability
+
+<Note>
+For these small improvements, the issue you opened is usually sufficient. Maintainers will bundle these changes with larger updates to avoid merge conflicts and extra overhead.
+</Note>
+
+## Opening a Pull Request
+
+Once your code is ready and tested:
+
+<Steps>
+  <Step title="Commit your changes">
+    Use meaningful commit messages with the appropriate emoji prefix:
+
+    ```bash
+    git add .
+    git commit -m "✨ Add wallpaper theming"
+    ```
+
+    **Required emoji prefixes:**
+    - 🐞 Bug fixes must include a bug emoji
+    - ✨ Added features must include a star emoji
+    - 🌐 Localization must include a globe emoji
+  </Step>
+
+  <Step title="Push to your fork">
+    ```bash
+    git push origin develop
+    ```
+  </Step>
+
+  <Step title="Create the pull request">
+    1. Go to GitHub and navigate to your fork
+    2. You'll see a button to "Create pull request" - click it
+    3. Fill in the PR details:
+       - Clear title describing the change
+       - Description explaining what you did and why
+       - Reference to the issue you opened
+    4. If your PR needs changes or isn't ready for review, mark it as a **draft PR**
+  </Step>
+</Steps>
+
+## Review Process
+
+After submitting your PR:
+
+1. **Automated checks** will run (including SwiftFormat validation)
+2. **Maintainer review** - A maintainer will review your code
+3. **Feedback** - You may be asked to make changes
+4. **Approval and merge** - Once approved, your PR will be merged
+
+<Tip>
+Be responsive to feedback and willing to make requested changes. The review process is collaborative and helps maintain code quality.
+</Tip>
+
+## Alternative Push Methods
+
+You can push changes in several ways:
+
+- **Xcode** - Use the 'Integrate' option at the top of the code editor
+- **Command line** - Use the git commands shown above (recommended)
+- **VS Code** - Open the project in VS Code and use its git integration
+
+Choose the method you're most comfortable with!

@@ -1,0 +1,352 @@
+---
+title: 'Halves & Quarters Positioning'
+description: 'Split-screen window positioning in halves and quarter sections'
+---
+
+## Overview
+
+Halves and quarters provide the most common split-screen window positioning patterns. These actions position windows in exact fractions of the available screen space.
+
+## Halves
+
+Defined in the static `halves` array (line 76):
+
+```swift
+static var halves: [WindowDirection] { 
+    [.topHalf, .verticalCenterHalf, .bottomHalf, 
+     .leftHalf, .horizontalCenterHalf, .rightHalf] 
+}
+```
+
+### Edge Halves
+
+<ParamField path="leftHalf" type="WindowDirection">
+  Positions window on the left half of the screen.
+  
+  **Raw Value:** `"LeftHalf"`
+  
+  **URL Scheme:** `loop://LeftHalf`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 0.5, height: 1.0)` (line 118)
+  
+  **Visual:**
+  ```
+  ┌─────────┬─────────┐
+  │         │         │
+  │  Window │         │
+  │   50%   │         │
+  │         │         │
+  └─────────┴─────────┘
+  ```
+</ParamField>
+
+<ParamField path="rightHalf" type="WindowDirection">
+  Positions window on the right half of the screen.
+  
+  **Raw Value:** `"RightHalf"`
+  
+  **URL Scheme:** `loop://RightHalf`
+  
+  **Frame Values:** `CGRect(x: 0.5, y: 0, width: 0.5, height: 1.0)` (line 116)
+  
+  **Visual:**
+  ```
+  ┌─────────┬─────────┐
+  │         │         │
+  │         │  Window │
+  │         │   50%   │
+  │         │         │
+  └─────────┴─────────┘
+  ```
+</ParamField>
+
+<ParamField path="topHalf" type="WindowDirection">
+  Positions window on the top half of the screen.
+  
+  **Raw Value:** `"TopHalf"`
+  
+  **URL Scheme:** `loop://TopHalf`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 1.0, height: 0.5)` (line 115)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │   Window  50%     │
+  ├───────────────────┤
+  │                   │
+  └───────────────────┘
+  ```
+</ParamField>
+
+<ParamField path="bottomHalf" type="WindowDirection">
+  Positions window on the bottom half of the screen.
+  
+  **Raw Value:** `"BottomHalf"`
+  
+  **URL Scheme:** `loop://BottomHalf`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0.5, width: 1.0, height: 0.5)` (line 117)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │                   │
+  ├───────────────────┤
+  │   Window  50%     │
+  └───────────────────┘
+  ```
+</ParamField>
+
+### Center Halves
+
+<ParamField path="horizontalCenterHalf" type="WindowDirection">
+  Positions window in the horizontal center, 50% width.
+  
+  **Raw Value:** `"HorizontalCenterHalf"`
+  
+  **URL Scheme:** `loop://HorizontalCenterHalf`
+  
+  **Frame Values:** `CGRect(x: 0.25, y: 0, width: 0.5, height: 1.0)` (line 119)
+  
+  **Visual:**
+  ```
+  ┌────┬──────────┬────┐
+  │    │          │    │
+  │25% │  Window  │25% │
+  │    │   50%    │    │
+  │    │          │    │
+  └────┴──────────┴────┘
+  ```
+  
+  **Behavior:**
+  - 25% margin on left and right
+  - Full height
+  - Perfectly centered horizontally
+  
+  **Note:** Identified by `willCenter` property (line 97)
+</ParamField>
+
+<ParamField path="verticalCenterHalf" type="WindowDirection">
+  Positions window in the vertical center, 50% height.
+  
+  **Raw Value:** `"VerticalCenterHalf"`
+  
+  **URL Scheme:** `loop://VerticalCenterHalf`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0.25, width: 1.0, height: 0.5)` (line 120)
+  
+  **Visual:**
+  ```
+  ┌───────────────────┐
+  │       25%         │
+  ├───────────────────┤
+  │   Window  50%     │
+  ├───────────────────┤
+  │       25%         │
+  └───────────────────┘
+  ```
+  
+  **Behavior:**
+  - 25% margin on top and bottom
+  - Full width
+  - Perfectly centered vertically
+  
+  **Note:** Identified by `willCenter` property (line 97)
+</ParamField>
+
+## Quarters
+
+Defined in the static `quarters` array (line 77):
+
+```swift
+static var quarters: [WindowDirection] { 
+    [.topLeftQuarter, .topRightQuarter, 
+     .bottomLeftQuarter, .bottomRightQuarter] 
+}
+```
+
+Each quarter occupies exactly 25% of the screen space (50% width × 50% height).
+
+### topLeftQuarter
+
+<ParamField path="topLeftQuarter" type="WindowDirection">
+  Positions window in the top-left quarter of the screen.
+  
+  **Raw Value:** `"TopLeftQuarter"`
+  
+  **URL Scheme:** `loop://TopLeftQuarter`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0, width: 0.5, height: 0.5)` (line 122)
+  
+  **Visual:**
+  ```
+  ┌─────────┬─────────┐
+  │ Window  │         │
+  │  25%    │         │
+  ├─────────┼─────────┤
+  │         │         │
+  └─────────┴─────────┘
+  ```
+</ParamField>
+
+### topRightQuarter
+
+<ParamField path="topRightQuarter" type="WindowDirection">
+  Positions window in the top-right quarter of the screen.
+  
+  **Raw Value:** `"TopRightQuarter"`
+  
+  **URL Scheme:** `loop://TopRightQuarter`
+  
+  **Frame Values:** `CGRect(x: 0.5, y: 0, width: 0.5, height: 0.5)` (line 123)
+  
+  **Visual:**
+  ```
+  ┌─────────┬─────────┐
+  │         │ Window  │
+  │         │  25%    │
+  ├─────────┼─────────┤
+  │         │         │
+  └─────────┴─────────┘
+  ```
+</ParamField>
+
+### bottomLeftQuarter
+
+<ParamField path="bottomLeftQuarter" type="WindowDirection">
+  Positions window in the bottom-left quarter of the screen.
+  
+  **Raw Value:** `"BottomLeftQuarter"`
+  
+  **URL Scheme:** `loop://BottomLeftQuarter`
+  
+  **Frame Values:** `CGRect(x: 0, y: 0.5, width: 0.5, height: 0.5)` (line 125)
+  
+  **Visual:**
+  ```
+  ┌─────────┬─────────┐
+  │         │         │
+  ├─────────┼─────────┤
+  │ Window  │         │
+  │  25%    │         │
+  └─────────┴─────────┘
+  ```
+</ParamField>
+
+### bottomRightQuarter
+
+<ParamField path="bottomRightQuarter" type="WindowDirection">
+  Positions window in the bottom-right quarter of the screen.
+  
+  **Raw Value:** `"BottomRightQuarter"`
+  
+  **URL Scheme:** `loop://BottomRightQuarter`
+  
+  **Frame Values:** `CGRect(x: 0.5, y: 0.5, width: 0.5, height: 0.5)` (line 124)
+  
+  **Visual:**
+  ```
+  ┌─────────┬─────────┐
+  │         │         │
+  ├─────────┼─────────┤
+  │         │ Window  │
+  │         │  25%    │
+  └─────────┴─────────┘
+  ```
+</ParamField>
+
+## Complete Layout Visualization
+
+### All Halves
+
+```
+        Top Half              Vertical Center Half
+┌───────────────────┐       ┌───────────────────┐
+│    Top Half       │       │                   │
+├─────────┬─────────┤       ├───────────────────┤
+│  Left   │  Right  │       │ Vertical Center   │
+│  Half   │  Half   │       ├───────────────────┤
+├─────────┴─────────┤       │                   │
+│   Bottom Half     │       └───────────────────┘
+└───────────────────┘
+
+  Horizontal Center Half
+┌────┬──────────┬────┐
+│    │          │    │
+│    │Horiz Ctr │    │
+│    │          │    │
+└────┴──────────┴────┘
+```
+
+### All Quarters
+
+```
+┌─────────┬─────────┐
+│   Top   │   Top   │
+│  Left   │  Right  │
+├─────────┼─────────┤
+│ Bottom  │ Bottom  │
+│  Left   │  Right  │
+└─────────┴─────────┘
+```
+
+## Usage Examples
+
+### Split Screen Workflow
+
+```bash
+# Position two windows side-by-side
+open "loop://LeftHalf"   # First window
+open "loop://RightHalf"  # Second window
+
+# Stack two windows vertically
+open "loop://TopHalf"    # First window
+open "loop://BottomHalf" # Second window
+```
+
+### Quad Layout
+
+```bash
+# Create a 4-window grid layout
+open "loop://TopLeftQuarter"     # Window 1
+open "loop://TopRightQuarter"    # Window 2
+open "loop://BottomLeftQuarter"  # Window 3
+open "loop://BottomRightQuarter" # Window 4
+```
+
+### Centered Presentation
+
+```bash
+# Center content with margins
+open "loop://HorizontalCenterHalf" # Centered with side margins
+open "loop://VerticalCenterHalf"   # Centered with top/bottom margins
+```
+
+## Radial Menu Behavior
+
+All halves and quarters have radial menu angles, appearing as directional options in the radial interface:
+
+- **Left/Right/Top/Bottom Halves:** Appear at cardinal directions
+- **Quarters:** Appear at diagonal angles
+- **Center Halves:** Appear at cardinal directions with centering indicator
+
+## Related Actions
+
+<CardGroup cols={2}>
+  <Card title="Thirds & Fourths" href="/api/thirds-fourths">
+    More precise positioning options
+  </Card>
+  
+  <Card title="General Actions" href="/api/general-actions">
+    Maximize and centering actions
+  </Card>
+  
+  <Card title="Size Adjustment" href="/api/size-adjustment">
+    Fine-tune window sizes
+  </Card>
+  
+  <Card title="WindowDirection Overview" href="/api/window-directions">
+    Complete action reference
+  </Card>
+</CardGroup>

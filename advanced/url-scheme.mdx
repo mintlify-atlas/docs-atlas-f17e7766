@@ -1,0 +1,158 @@
+---
+title: URL Scheme
+description: Control Loop using URL commands for automation and scripting
+---
+
+Loop supports a URL scheme for window management automation. This allows you to control Loop from scripts, shortcuts, and other applications.
+
+## URL Format
+
+All Loop URL commands follow this format:
+
+```
+loop://<command>/<parameters>
+```
+
+## Available Commands
+
+### Window Direction Commands
+
+Move windows to specific positions on the screen.
+
+**Format:** `loop://direction/<direction>`
+
+| Command | Description |
+|---------|-------------|
+| `loop://direction/left` | Move window to left half |
+| `loop://direction/right` | Move window to right half |
+| `loop://direction/top` | Move window to top half |
+| `loop://direction/bottom` | Move window to bottom half |
+| `loop://direction/maximize` | Maximize window |
+| `loop://direction/center` | Center window |
+
+**Example:**
+
+```bash
+open "loop://direction/right"
+```
+
+### Screen Management
+
+Move windows between displays.
+
+**Format:** `loop://screen/<command>`
+
+| Command | Description |
+|---------|-------------|
+| `loop://screen/next` | Move window to next screen |
+| `loop://screen/previous` | Move window to previous screen |
+
+**Example:**
+
+```bash
+open "loop://screen/next"
+```
+
+### Action Commands
+
+Execute window actions.
+
+**Format:** `loop://action/<action>`
+
+| Command | Description |
+|---------|-------------|
+| `loop://action/maximize` | Maximize window |
+| `loop://action/leftHalf` | Move to left half |
+
+<Note>
+Use `loop://list/actions` to see all available actions in your Loop configuration.
+</Note>
+
+**Example:**
+
+```bash
+open "loop://action/maximize"
+```
+
+### Keybind Commands
+
+Trigger custom keybinds by name.
+
+**Format:** `loop://keybind/<name>`
+
+**Example:**
+
+```bash
+open "loop://keybind/myCustomLayout"
+```
+
+<Note>
+Use `loop://list/keybinds` to see all available custom keybinds.
+</Note>
+
+### List Commands
+
+Discover available commands and configurations.
+
+**Format:** `loop://list/<type>`
+
+| Command | Description |
+|---------|-------------|
+| `loop://list/actions` | List all window actions |
+| `loop://list/keybinds` | List all custom keybinds |
+| `loop://list/all` | List everything |
+
+**Example:**
+
+```bash
+open "loop://list/all"
+```
+
+## Usage Tips
+
+<AccordionGroup>
+  <Accordion title="Case Insensitivity">
+    All commands are case-insensitive. Both `loop://direction/LEFT` and `loop://direction/left` work.
+  </Accordion>
+
+  <Accordion title="URL Encoding">
+    Parameters with spaces must be URL encoded. Use `%20` for spaces.
+  </Accordion>
+
+  <Accordion title="Window Target">
+    Window commands operate on the frontmost non-terminal window.
+  </Accordion>
+
+  <Accordion title="Discovery">
+    Use list commands to discover available options in your configuration.
+  </Accordion>
+</AccordionGroup>
+
+## Error Handling
+
+Loop provides helpful feedback for invalid commands:
+
+```bash
+# Invalid command
+open "loop://invalid"
+# Returns: Available commands
+
+# Missing parameter
+open "loop://direction"
+# Returns: Available directions
+
+# Invalid keybind
+open "loop://keybind/nonexistent"
+# Returns: Available keybinds
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="AppleScript Integration" icon="apple" href="/advanced/applescript">
+    Control Loop with AppleScript
+  </Card>
+  <Card title="Scripting Examples" icon="code" href="/advanced/scripting-examples">
+    Real-world automation workflows
+  </Card>
+</CardGroup>

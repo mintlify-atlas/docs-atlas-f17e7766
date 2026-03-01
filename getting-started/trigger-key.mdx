@@ -1,0 +1,169 @@
+---
+title: "Trigger key configuration"
+description: "Set up and customize your Loop trigger key"
+icon: "keyboard"
+---
+
+The trigger key is the core of Loop's functionality. It must be held down or pressed to activate Loop's features, including the radial menu and keyboard shortcuts.
+
+## Understanding the trigger key
+
+Loop uses a trigger key to function:
+
+- **For radial menu**: Hold down the trigger key and move the cursor in the desired direction
+- **For keyboard shortcuts**: Press the trigger key together with another key to activate specific actions
+- **Configuration**: Set in the **Behavior** tab of Loop's settings
+- **Flexibility**: Can consist of one or multiple modifier keys
+
+<Info>
+  Many users prefer remapping their Caps Lock key to function as their Loop trigger, as it's easily accessible and rarely used for its original purpose.
+</Info>
+
+## Setting Caps Lock as your trigger key
+
+Caps Lock is an ideal trigger key because of its prominent location and infrequent use. There are multiple methods to configure Caps Lock as your trigger key:
+
+<Tabs>
+  <Tab title="System Settings (recommended)">
+    This method remaps Caps Lock at the system level using macOS's built-in keyboard settings.
+
+    <Steps>
+      <Step title="Open System Settings">
+        Go to **System Settings** → **Keyboard** → **Keyboard Shortcuts...**
+      </Step>
+      <Step title="Access Modifier Keys">
+        In the Keyboard Shortcuts window, select the **Modifier Keys** tab at the bottom of the sidebar.
+      </Step>
+      <Step title="Remap Caps Lock">
+        Find `Caps Lock (⇪) key` in the list and change its action to `(^) Control`.
+
+        <Warning>
+          This remaps Caps Lock system-wide, not just for Loop.
+        </Warning>
+      </Step>
+      <Step title="Repeat for all keyboards">
+        If you have multiple keyboards connected (built-in, external, etc.), repeat this remapping process for each keyboard. Use the keyboard selector dropdown to switch between keyboards.
+      </Step>
+      <Step title="Configure Loop">
+        In Loop's settings, go to the **Behavior** tab and select **Right Control** as your trigger key.
+
+        <Tip>
+          Using Right Control allows you to still use Left Control for normal keyboard shortcuts.
+        </Tip>
+      </Step>
+    </Steps>
+
+    ### Why Right Control?
+
+    By remapping Caps Lock to Right Control (instead of Left Control), you maintain the ability to use standard Control-based shortcuts with your left hand while using your remapped Caps Lock key for Loop.
+  </Tab>
+  <Tab title="Hyperkey app">
+    [Hyperkey](https://hyperkey.app/) is a dedicated app for remapping Caps Lock to a combination of all modifier keys at once, creating a "super" modifier that won't conflict with existing shortcuts.
+
+    <Steps>
+      <Step title="Install Hyperkey">
+        Download and install [Hyperkey](https://hyperkey.app/) from its official website.
+      </Step>
+      <Step title="Configure Hyperkey">
+        Launch Hyperkey and follow its setup wizard to remap Caps Lock to the Hyper key (⌃⌥⇧⌘).
+      </Step>
+      <Step title="Set Loop trigger">
+        In Loop's settings (**Behavior** tab), set your trigger key to match the Hyperkey configuration (typically all modifiers: ⌃⌥⇧⌘).
+      </Step>
+    </Steps>
+
+    ### Benefits of Hyperkey
+
+    - Single key acts as all modifiers combined
+    - Virtually no conflicts with existing shortcuts
+    - Easy to set up and manage
+    - Works across all applications
+  </Tab>
+  <Tab title="Karabiner Elements">
+    [Karabiner Elements](https://karabiner-elements.pqrs.org/) is a powerful keyboard customization tool that offers advanced remapping capabilities.
+
+    <Steps>
+      <Step title="Install Karabiner Elements">
+        Download and install [Karabiner Elements](https://karabiner-elements.pqrs.org/) from its official website.
+      </Step>
+      <Step title="Grant permissions">
+        Follow the prompts to grant Karabiner Elements the necessary system permissions.
+      </Step>
+      <Step title="Create a simple modification">
+        1. Open Karabiner Elements
+        2. Go to the **Simple Modifications** tab
+        3. Click **Add item**
+        4. Set **From key** to `caps_lock`
+        5. Set **To key** to `right_control` (or your preferred modifier)
+      </Step>
+      <Step title="Configure Loop">
+        In Loop's settings (**Behavior** tab), select the modifier key you chose in Karabiner (e.g., **Right Control**).
+      </Step>
+    </Steps>
+
+    ### Why use Karabiner?
+
+    Karabiner Elements is ideal if you:
+    - Want more complex key remapping options
+    - Already use Karabiner for other customizations
+    - Need per-application key remapping
+    - Want to create advanced key combinations
+  </Tab>
+</Tabs>
+
+## Alternative trigger keys
+
+While Caps Lock is popular, you can use any modifier key or combination as your trigger:
+
+<AccordionGroup>
+  <Accordion title="Single modifier keys">
+    Common single modifier options:
+    - **Right Control** (⌃): Good if you've remapped Caps Lock
+    - **Right Option** (⌥): Accessible but may conflict with some shortcuts
+    - **Right Command** (⌘): Easy to reach but conflicts with many system shortcuts
+    - **Function (Fn)**: Available on most Mac keyboards
+
+    <Warning>
+      Avoid using Left modifiers as they're commonly used in standard keyboard shortcuts.
+    </Warning>
+  </Accordion>
+  <Accordion title="Multiple modifier combinations">
+    Combining multiple modifiers reduces conflicts with existing shortcuts:
+    - **⌃⌥** (Control + Option)
+    - **⌃⇧** (Control + Shift)  
+    - **⌥⇧** (Option + Shift)
+    - **⌃⌥⇧⌘** (All modifiers - Hyper key)
+
+    <Tip>
+      Multi-key combinations are less convenient to press but virtually eliminate shortcut conflicts.
+    </Tip>
+  </Accordion>
+</AccordionGroup>
+
+## Testing your trigger key
+
+After configuring your trigger key:
+
+1. Open any application window
+2. Hold down your trigger key
+3. Move your cursor to see if the radial menu appears
+4. Try moving in different directions to test responsiveness
+
+<Check>
+  If the radial menu appears and responds to your cursor movement, your trigger key is configured correctly!
+</Check>
+
+<Warning>
+  If the radial menu doesn't appear, verify that:
+  - Loop has accessibility permissions enabled
+  - Your trigger key is properly set in Loop's **Behavior** settings
+  - Your keyboard remapping tool (if using one) is running and configured correctly
+</Warning>
+
+## Next steps
+
+Now that your trigger key is configured, explore Loop's features:
+
+<Card title="Explore Loop features" icon="sparkles" href="/features">
+  Learn about radial menu, keyboard shortcuts, cycles, and more
+</Card>

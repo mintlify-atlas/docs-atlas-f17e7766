@@ -1,0 +1,301 @@
+---
+title: Custom Actions
+description: Create custom window positions and sizes with precise control
+---
+
+Loop allows you to create custom window actions that go beyond the built-in presets. With custom actions, you can define exact window positions and sizes using either percentages or pixel values.
+
+## Creating a Custom Action
+
+Custom actions are created in the **Keybinds** settings tab:
+
+1. Click **Add** to create a new keybind
+2. Select the action dropdown and choose **Custom**
+3. Configure the position, size, and units
+4. Assign a keyboard shortcut (optional)
+5. Give your action a descriptive name (optional)
+
+## WindowAction Structure
+
+Custom actions are represented by the `WindowAction` struct with specific properties:
+
+```swift
+struct WindowAction {
+    var direction: WindowDirection  // Set to .custom
+    var name: String?              // Optional custom name
+    var unit: CustomWindowActionUnit?
+    var anchor: CustomWindowActionAnchor?
+    var width: Double?
+    var height: Double?
+    var xPoint: Double?
+    var yPoint: Double?
+    var positionMode: CustomWindowActionPositionMode?
+    var sizeMode: CustomWindowActionSizeMode?
+}
+```
+
+Defined in `source/Loop/Window Management/Window Action/WindowAction.swift:15`
+
+## Units
+
+Custom actions support two unit types for measurements:
+
+### Pixels
+
+Absolute pixel measurements for precise control:
+
+```swift
+enum CustomWindowActionUnit {
+    case pixels = 0  // Suffix: "px"
+    case percentage = 1  // Suffix: "%"
+}
+```
+
+**Example**: A window that's exactly 1200px wide and 800px tall
+
+### Percentage
+
+Relative measurements based on screen size:
+
+```swift
+// 50% width = half the screen width
+// 100% height = full screen height
+```
+
+**Example**: A window that takes up 66.67% width and 50% height
+
+Defined in `source/Loop/Window Management/Window Action/Custom Window Sizes/CustomWindowActionUnit.swift:10`
+
+## Position Modes
+
+Control how your custom action positions windows:
+
+### Generic Mode
+
+Use predefined anchors to position the window:
+
+```swift
+enum CustomWindowActionPositionMode {
+    case generic = 0      // Use anchor points
+    case coordinates = 1  // Use exact x/y coordinates
+}
+```
+
+With generic mode, you select an **anchor** point that determines where the window is positioned on the screen.
+
+Defined in `source/Loop/Window Management/Window Action/Custom Window Sizes/CustomWindowActionPositionMode.swift:10`
+
+### Coordinates Mode
+
+Specify exact x and y coordinates for precise positioning:
+
+- **xPoint** - Horizontal position from the left edge
+- **yPoint** - Vertical position from the top edge
+
+Coordinates use the same unit (pixels or percentage) as the size.
+
+## Anchors
+
+When using **generic** position mode, anchors determine where your window is positioned:
+
+```swift
+enum CustomWindowActionAnchor {
+    case none = -1
+    case topLeft = 0
+    case top = 1
+    case topRight = 2
+    case right = 3
+    case bottomRight = 4
+    case bottom = 5
+    case bottomLeft = 6
+    case left = 7
+    case center = 8
+    case macOSCenter = 9  // Special center mode matching macOS behavior
+}
+```
+
+Defined in `source/Loop/Window Management/Window Action/Custom Window Sizes/CustomWindowActionAnchor.swift:11`
+
+### Anchor Visualizations
+
+Each anchor corresponds to a built-in window action for easy visualization:
+
+- **topLeft** → Top Left Quarter
+- **top** → Top Half
+- **topRight** → Top Right Quarter
+- **right** → Right Half
+- **bottomRight** → Bottom Right Quarter
+- **bottom** → Bottom Half
+- **bottomLeft** → Bottom Left Quarter
+- **left** → Left Half
+- **center** → Center
+- **macOSCenter** → macOS Center
+
+## Size Modes
+
+Control how the window size is determined:
+
+```swift
+enum CustomWindowActionSizeMode {
+    case custom = 0       // Use width/height values
+    case preserveSize = 1 // Keep current window size
+    case initialSize = 2  // Restore window's original size
+}
+```
+
+Defined in `source/Loop/Window Management/Window Action/Custom Window Sizes/CustomWindowActionSizeMode.swift:10`
+
+### Custom
+
+Use the width and height values you specify.
+
+### Preserve Size
+
+Keep the window's current size and only change its position. Perfect for moving windows between screens or to specific locations without resizing.
+
+<Note>
+  When using **Preserve Size** or **Initial Size** modes, padding will not be applied to the action.
+</Note>
+
+### Initial Size
+
+Restore the window to its original size before Loop modified it, but position it according to your anchor or coordinates.
+
+## Example Custom Actions
+
+### Sidebar Window (Left)
+
+A narrow sidebar on the left side of the screen:
+
+- **Unit**: Pixels
+- **Position Mode**: Generic
+- **Anchor**: Left
+- **Size Mode**: Custom
+- **Width**: 400px
+- **Height**: 100% (in percentage)
+
+### Center Floating Window
+
+A centered window with specific dimensions:
+
+- **Unit**: Pixels
+- **Position Mode**: Generic
+- **Anchor**: Center
+- **Size Mode**: Custom
+- **Width**: 1200px
+- **Height**: 800px
+
+### Top-Right Note Window
+
+Small note window in the top-right corner:
+
+- **Unit**: Pixels
+- **Position Mode**: Coordinates
+- **X Point**: Screen width - 320px
+- **Y Point**: 80px (below menu bar)
+- **Size Mode**: Custom
+- **Width**: 300px
+- **Height**: 400px
+
+### Two-Thirds Center
+
+Larger center window using percentages:
+
+- **Unit**: Percentage
+- **Position Mode**: Generic
+- **Anchor**: Center
+- **Size Mode**: Custom
+- **Width**: 66.67%
+- **Height**: 100%
+
+### Move to Center (Preserve Size)
+
+Move current window to center without resizing:
+
+- **Position Mode**: Generic
+- **Anchor**: Center
+- **Size Mode**: Preserve Size
+
+## Custom Cycles
+
+You can create **cycle** actions that rotate through multiple custom actions:
+
+```swift
+init(_ name: String? = nil, cycle: [WindowAction], keybind: Set<CGKeyCode>)
+```
+
+Cycles allow you to press the same keyboard shortcut multiple times to step through different window positions. For example:
+
+1. First press: Left half
+2. Second press: Right two-thirds
+3. Third press: Full screen
+4. Fourth press: Back to left half
+
+See [Keybinds > Cycles](/configuration/keybinds#cycles) for more information.
+
+## Padding and Custom Actions
+
+Padding is applied to custom actions based on the size mode:
+
+```swift
+var isInnerPaddingApplicable: Bool {
+    if direction == .undo || direction == .initialFrame {
+        return false
+    }
+    if direction.isCustomizable, sizeMode == .initialSize || sizeMode == .preserveSize {
+        return false  // No padding for these modes
+    }
+    return true
+}
+```
+
+From `source/Loop/Window Management/Window Action/WindowAction.swift:168`
+
+- **Custom size mode**: Padding is applied
+- **Preserve Size**: No padding
+- **Initial Size**: No padding
+
+## Naming Custom Actions
+
+Give your custom actions descriptive names to easily identify them:
+
+```swift
+func getName() -> String {
+    if direction == .custom {
+        return name?.isEmpty == false ? name! : "Custom Action"
+    }
+    // ...
+}
+```
+
+If no name is provided, Loop will display "Custom Action" as the default name.
+
+## Use Cases
+
+### Ultra-Wide Monitor Layouts
+
+Create custom sections for ultra-wide monitors:
+
+- **Left third**: 33.33% width, left anchor
+- **Center half**: 50% width, center anchor  
+- **Right third**: 33.33% width, right anchor
+
+### Vertical Monitor Layouts
+
+Optimize for vertical/portrait displays:
+
+- **Top half**: 100% width, 50% height, top anchor
+- **Bottom half**: 100% width, 50% height, bottom anchor
+- **Reading pane**: 80% width, 100% height, center anchor
+
+### Multi-Monitor Workflows
+
+Create position presets for different screens in your multi-monitor setup, then use [screen switching actions](/api/screen-switching) to move windows between them.
+
+### App-Specific Layouts
+
+Design custom window sizes for specific applications:
+
+- Code editor: 70% width on left
+- Browser: 30% width on right
+- Terminal: Bottom strip, 100% width × 30% height

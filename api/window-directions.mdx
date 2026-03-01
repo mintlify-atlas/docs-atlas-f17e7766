@@ -1,0 +1,211 @@
+---
+title: 'WindowDirection Overview'
+description: 'Comprehensive guide to all window positioning and management actions in Loop'
+---
+
+## Introduction
+
+The `WindowDirection` enum is the core of Loop's window management system. It defines all possible window positioning, sizing, and management actions that can be triggered through:
+
+- URL scheme commands (`loop://[action]`)
+- Keyboard shortcuts (keybinds)
+- The radial menu interface
+- Menubar actions
+
+## Enum Structure
+
+WindowDirection is defined as a Swift enum in `/Loop/Window Management/Window Action/WindowDirection.swift:12`:
+
+```swift
+enum WindowDirection: String, CaseIterable, Identifiable, Codable {
+    var id: Self { self }
+    // ... cases
+}
+```
+
+Each case represents a specific window action with a raw string value that's used in URL schemes and configuration.
+
+## Action Categories
+
+Loop organizes window actions into several logical categories:
+
+<CardGroup cols={2}>
+  <Card title="General Actions" icon="window-maximize" href="/api/general-actions">
+    Fullscreen, maximize, center, minimize, and hide actions
+  </Card>
+  
+  <Card title="Halves & Quarters" icon="grid-2" href="/api/halves-quarters">
+    Split screen positioning in halves and quarters
+  </Card>
+  
+  <Card title="Thirds & Fourths" icon="grid-3" href="/api/thirds-fourths">
+    Precise positioning in thirds and fourths
+  </Card>
+  
+  <Card title="Screen Switching" icon="display" href="/api/screen-switching">
+    Move windows between multiple displays
+  </Card>
+  
+  <Card title="Size Adjustment" icon="arrows-maximize" href="/api/size-adjustment">
+    Grow, shrink, scale, and move windows
+  </Card>
+  
+  <Card title="Focus Actions" icon="crosshairs" href="/api/focus-actions">
+    Navigate between windows directionally
+  </Card>
+</CardGroup>
+
+## Static Arrays
+
+For organization and UI purposes, WindowDirection defines static arrays grouping related actions (lines 75-87):
+
+```swift
+static var general: [WindowDirection]
+static var halves: [WindowDirection]
+static var quarters: [WindowDirection]
+static var horizontalThirds: [WindowDirection]
+static var verticalThirds: [WindowDirection]
+static var horizontalFourths: [WindowDirection]
+static var screenSwitching: [WindowDirection]
+static var sizeAdjustment: [WindowDirection]
+static var shrink: [WindowDirection]
+static var grow: [WindowDirection]
+static var move: [WindowDirection]
+static var focus: [WindowDirection]
+static var more: [WindowDirection]
+```
+
+These arrays are used in:
+- The menubar resize submenu
+- Keybind configuration interfaces
+- Programmatic iteration over action groups
+
+## Using Actions
+
+### URL Scheme
+
+Trigger any action using Loop's URL scheme:
+
+```
+loop://[ActionRawValue]
+```
+
+For example:
+- `loop://Maximize` - Maximize the frontmost window
+- `loop://LeftHalf` - Position window on left half
+- `loop://TopRightQuarter` - Position in top-right quarter
+
+### In Keybind Configuration
+
+When setting up keyboard shortcuts, actions are referenced by their raw string values (e.g., "Maximize", "LeftHalf", "TopRightQuarter").
+
+## Computed Properties
+
+WindowDirection provides several utility properties for checking action characteristics (lines 90-107):
+
+<ResponseField name="isNoOp" type="Bool">
+  Returns true for `.noSelection` and `.noAction`
+</ResponseField>
+
+<ResponseField name="willChangeScreen" type="Bool">
+  Returns true if the action moves the window to a different display
+</ResponseField>
+
+<ResponseField name="willAdjustSize" type="Bool">
+  Returns true for size adjustment actions (larger, smaller, scaleUp, scaleDown)
+</ResponseField>
+
+<ResponseField name="willShrink" type="Bool">
+  Returns true for shrink actions
+</ResponseField>
+
+<ResponseField name="willGrow" type="Bool">
+  Returns true for grow actions
+</ResponseField>
+
+<ResponseField name="willMove" type="Bool">
+  Returns true for move actions (moveUp, moveDown, etc.)
+</ResponseField>
+
+<ResponseField name="willFocusWindow" type="Bool">
+  Returns true for focus actions
+</ResponseField>
+
+<ResponseField name="willCenter" type="Bool">
+  Returns true for centering actions
+</ResponseField>
+
+<ResponseField name="isCustomizable" type="Bool">
+  Returns true for custom and stash actions
+</ResponseField>
+
+## Frame Calculations
+
+Most positioning actions define frame multiply values (lines 109-147) that determine window position and size as fractions of the available screen space:
+
+```swift
+var frameMultiplyValues: CGRect? {
+    switch self {
+    case .maximize: .init(x: 0, y: 0, width: 1.0, height: 1.0)
+    case .leftHalf: .init(x: 0, y: 0, width: 1.0 / 2.0, height: 1.0)
+    // ...
+    }
+}
+```
+
+These values represent:
+- **x**: Horizontal offset from screen origin (0.0 to 1.0)
+- **y**: Vertical offset from screen origin (0.0 to 1.0)
+- **width**: Window width as fraction of screen width (0.0 to 1.0)
+- **height**: Window height as fraction of screen height (0.0 to 1.0)
+
+## Special Actions
+
+### No-Op Actions
+
+<ResponseField name="noAction" type="WindowDirection">
+  Explicitly chosen empty action - can be user-bound to disable a trigger
+</ResponseField>
+
+<ResponseField name="noSelection" type="WindowDirection">
+  Default state before any radial menu selection is made
+</ResponseField>
+
+### Advanced Actions
+
+<ResponseField name="undo" type="WindowDirection">
+  Restore window to its previous position and size
+</ResponseField>
+
+<ResponseField name="initialFrame" type="WindowDirection">
+  Restore window to its original frame before any Loop actions
+</ResponseField>
+
+<ResponseField name="custom" type="WindowDirection">
+  User-defined custom positioning with configurable dimensions
+</ResponseField>
+
+<ResponseField name="cycle" type="WindowDirection">
+  Cycle through a sequence of predefined window positions
+</ResponseField>
+
+<ResponseField name="stash" type="WindowDirection">
+  Temporarily hide window to a stash area
+</ResponseField>
+
+<ResponseField name="unstash" type="WindowDirection">
+  Restore window from stash area
+</ResponseField>
+
+## Next Steps
+
+Explore specific action categories:
+
+<CardGroup cols={3}>
+  <Card title="General Actions" href="/api/general-actions" />
+  <Card title="Halves & Quarters" href="/api/halves-quarters" />
+  <Card title="Thirds & Fourths" href="/api/thirds-fourths" />
+  <Card title="Screen Switching" href="/api/screen-switching" />
+  <Card title="Size Adjustment" href="/api/size-adjustment" />
+  <Card title="Focus Actions" href="/api/focus-actions" />
+</CardGroup>

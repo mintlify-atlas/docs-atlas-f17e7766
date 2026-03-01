@@ -1,0 +1,222 @@
+---
+title: Scripting Examples
+description: Real-world examples of automating Loop with shell scripts and AppleScript
+---
+
+This page provides practical examples of automating Loop using shell scripts, AppleScript, and the URL scheme.
+
+## Shell Script Examples
+
+### Basic Window Movement
+
+Simple commands for common window operations:
+
+```bash
+# Move window to right half
+open "loop://direction/right"
+
+# Maximize window
+open "loop://action/maximize"
+
+# Move to next screen
+open "loop://screen/next"
+```
+
+### Sequential Actions
+
+Chain multiple actions together with delays:
+
+```bash
+#!/bin/bash
+# Move window right and then maximize
+open "loop://direction/right"
+sleep 0.5
+open "loop://action/maximize"
+```
+
+<Note>
+The `sleep` command ensures the first action completes before the next one starts.
+</Note>
+
+### Discovery Scripts
+
+Query available commands and configurations:
+
+```bash
+# List all commands
+open "loop://list/all"
+
+# List window actions
+open "loop://list/actions"
+
+# List custom keybinds
+open "loop://list/keybinds"
+```
+
+## AppleScript Examples
+
+### Activating Loop
+
+```bash
+osascript -e 'tell application "Loop" to activate'
+```
+
+### Window Commands
+
+```bash
+# Move window to left half
+osascript -e 'open location "loop://direction/left"'
+
+# Move window to right half
+osascript -e 'open location "loop://direction/right"'
+```
+
+## Automation Workflows
+
+### Multi-Step Window Layout
+
+Create a complete workspace layout:
+
+```bash
+#!/bin/bash
+# Set up a productivity layout
+
+# Move current window to left half
+open "loop://direction/left"
+sleep 0.5
+
+# Switch to next window (using system commands)
+# Then move it to right half
+open "loop://direction/right"
+```
+
+### Screen Management Workflow
+
+Move windows between displays:
+
+```bash
+#!/bin/bash
+# Move window to next screen and maximize
+
+open "loop://screen/next"
+sleep 0.3
+open "loop://action/maximize"
+```
+
+## Integration Patterns
+
+### Combining URL Scheme and AppleScript
+
+Use both approaches in the same script:
+
+```bash
+#!/bin/bash
+
+# Activate Loop using AppleScript
+osascript -e 'tell application "Loop" to activate'
+
+# Execute window command using URL scheme
+open "loop://direction/right"
+
+# Wait and execute another command
+sleep 0.5
+osascript -e 'open location "loop://action/maximize"'
+```
+
+### Keyboard Shortcut Automation
+
+Create shell aliases for common operations:
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+
+alias loop-left="open 'loop://direction/left'"
+alias loop-right="open 'loop://direction/right'"
+alias loop-max="open 'loop://action/maximize'"
+alias loop-next="open 'loop://screen/next'"
+```
+
+Then use them directly:
+
+```bash
+loop-left   # Move window to left half
+loop-max    # Maximize window
+```
+
+### Custom Keybind Execution
+
+Trigger custom keybinds by name:
+
+```bash
+#!/bin/bash
+# Execute a custom keybind layout
+
+open "loop://keybind/myCustomLayout"
+```
+
+## Advanced Examples
+
+### Conditional Window Management
+
+Combine Loop with system queries:
+
+```bash
+#!/bin/bash
+# Move window based on screen count
+
+screen_count=$(system_profiler SPDisplaysDataType | grep -c "Resolution")
+
+if [ $screen_count -gt 1 ]; then
+    open "loop://screen/next"
+else
+    open "loop://direction/right"
+fi
+```
+
+### Timed Automation
+
+Create time-based window layouts:
+
+```bash
+#!/bin/bash
+# Different layouts for different times of day
+
+hour=$(date +%H)
+
+if [ $hour -lt 12 ]; then
+    # Morning layout
+    open "loop://direction/left"
+else
+    # Afternoon layout
+    open "loop://direction/maximize"
+fi
+```
+
+## Tips for Effective Scripting
+
+<Tip>
+Use `sleep` commands between sequential actions to ensure each command completes before the next starts. A delay of 0.3-0.5 seconds is usually sufficient.
+</Tip>
+
+<Tip>
+Test individual commands before combining them into complex scripts. Use `loop://list/all` to verify available commands.
+</Tip>
+
+<Tip>
+Create shell aliases for frequently used commands to speed up your workflow.
+</Tip>
+
+<Warning>
+Window commands operate on the frontmost non-terminal window. Make sure the correct window is active before running commands.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="URL Scheme Reference" icon="link" href="/advanced/url-scheme">
+    Complete URL command documentation
+  </Card>
+  <Card title="AppleScript Integration" icon="apple" href="/advanced/applescript">
+    AppleScript automation guide
+  </Card>
+</CardGroup>

@@ -1,0 +1,356 @@
+---
+title: 'Screen Switching Actions'
+description: 'Move windows between multiple displays and monitors'
+---
+
+## Overview
+
+Screen switching actions enable seamless window movement across multiple displays. These actions are essential for multi-monitor workflows, allowing you to quickly relocate windows to different screens.
+
+Defined in the static `screenSwitching` array (line 81):
+
+```swift
+static var screenSwitching: [WindowDirection] { 
+    [.nextScreen, .previousScreen, .leftScreen, 
+     .rightScreen, .topScreen, .bottomScreen] 
+}
+```
+
+## Properties
+
+All screen switching actions share a common computed property:
+
+<ResponseField name="willChangeScreen" type="Bool">
+  Returns `true` for all screen switching actions (line 91)
+  
+  ```swift
+  var willChangeScreen: Bool { 
+      WindowDirection.screenSwitching.contains(self) 
+  }
+  ```
+  
+  Used to identify actions that will move the window to a different display.
+</ResponseField>
+
+## Sequential Navigation
+
+### nextScreen
+
+<ParamField path="nextScreen" type="WindowDirection">
+  Moves the window to the next screen in the display order.
+  
+  **Raw Value:** `"NextScreen"`
+  
+  **URL Scheme:** `loop://NextScreen`
+  
+  **Behavior:**
+  - Moves window to the next display in macOS screen ordering
+  - Cycles back to first screen when at the last screen
+  - Preserves window size and relative position
+  - Common for clockwise monitor rotation workflows
+  
+  **Display Order:**
+  ```
+  Screen 1 → Screen 2 → Screen 3 → Screen 1 (cycles)
+  ```
+</ParamField>
+
+### previousScreen
+
+<ParamField path="previousScreen" type="WindowDirection">
+  Moves the window to the previous screen in the display order.
+  
+  **Raw Value:** `"PreviousScreen"`
+  
+  **URL Scheme:** `loop://PreviousScreen`
+  
+  **Behavior:**
+  - Moves window to the previous display in macOS screen ordering
+  - Cycles to last screen when at the first screen
+  - Preserves window size and relative position
+  - Opposite direction of `.nextScreen`
+  
+  **Display Order:**
+  ```
+  Screen 1 ← Screen 2 ← Screen 3 ← Screen 1 (cycles)
+  ```
+</ParamField>
+
+## Directional Navigation
+
+Directional screen switching moves windows based on physical display arrangement.
+
+### leftScreen
+
+<ParamField path="leftScreen" type="WindowDirection">
+  Moves the window to the display positioned to the left.
+  
+  **Raw Value:** `"LeftScreen"`
+  
+  **URL Scheme:** `loop://LeftScreen`
+  
+  **Behavior:**
+  - Moves to the display physically positioned to the left
+  - Based on display arrangement in System Settings
+  - No effect if no display exists to the left
+  - Preserves window size and relative position
+  
+  **Physical Layout:**
+  ```
+  ┌────────┐  ┌────────┐
+  │ Left   │  │Current │
+  │Screen  │  │Screen  │
+  └────────┘  └────────┘
+       ↑         
+    Moves here
+  ```
+</ParamField>
+
+### rightScreen
+
+<ParamField path="rightScreen" type="WindowDirection">
+  Moves the window to the display positioned to the right.
+  
+  **Raw Value:** `"RightScreen"`
+  
+  **URL Scheme:** `loop://RightScreen`
+  
+  **Behavior:**
+  - Moves to the display physically positioned to the right
+  - Based on display arrangement in System Settings
+  - No effect if no display exists to the right
+  - Preserves window size and relative position
+  
+  **Physical Layout:**
+  ```
+  ┌────────┐  ┌────────┐
+  │Current │  │ Right  │
+  │Screen  │  │Screen  │
+  └────────┘  └────────┘
+                  ↑
+              Moves here
+  ```
+</ParamField>
+
+### topScreen
+
+<ParamField path="topScreen" type="WindowDirection">
+  Moves the window to the display positioned above.
+  
+  **Raw Value:** `"TopScreen"`
+  
+  **URL Scheme:** `loop://TopScreen`
+  
+  **Behavior:**
+  - Moves to the display physically positioned above
+  - Based on display arrangement in System Settings
+  - No effect if no display exists above
+  - Preserves window size and relative position
+  - Common in vertical monitor stacking setups
+  
+  **Physical Layout:**
+  ```
+       ┌────────┐
+       │  Top   │ ← Moves here
+       │ Screen │
+       └────────┘
+       ┌────────┐
+       │Current │
+       │ Screen │
+       └────────┘
+  ```
+</ParamField>
+
+### bottomScreen
+
+<ParamField path="bottomScreen" type="WindowDirection">
+  Moves the window to the display positioned below.
+  
+  **Raw Value:** `"BottomScreen"`
+  
+  **URL Scheme:** `loop://BottomScreen`
+  
+  **Behavior:**
+  - Moves to the display physically positioned below
+  - Based on display arrangement in System Settings
+  - No effect if no display exists below
+  - Preserves window size and relative position
+  - Common in vertical monitor stacking setups
+  
+  **Physical Layout:**
+  ```
+       ┌────────┐
+       │Current │
+       │ Screen │
+       └────────┘
+       ┌────────┐
+       │ Bottom │ ← Moves here
+       │ Screen │
+       └────────┘
+  ```
+</ParamField>
+
+## Usage Examples
+
+### Keyboard Shortcuts
+
+```bash
+# Move window to next display
+open "loop://NextScreen"
+
+# Move window to previous display
+open "loop://PreviousScreen"
+
+# Move window based on physical position
+open "loop://LeftScreen"
+open "loop://RightScreen"
+open "loop://TopScreen"
+open "loop://BottomScreen"
+```
+
+### Multi-Monitor Workflows
+
+**Horizontal Dual Monitor Setup:**
+```bash
+# Send window to left monitor
+open "loop://LeftScreen"
+
+# Send window to right monitor
+open "loop://RightScreen"
+```
+
+**Vertical Monitor Stack:**
+```bash
+# Send window to top monitor
+open "loop://TopScreen"
+
+# Send window to bottom monitor
+open "loop://BottomScreen"
+```
+
+**Triple Monitor Rotation:**
+```bash
+# Cycle through monitors clockwise
+open "loop://NextScreen"  # Repeatedly press to cycle
+
+# Cycle through monitors counter-clockwise
+open "loop://PreviousScreen"  # Repeatedly press to cycle
+```
+
+## Display Arrangement
+
+The directional screen switching actions (left/right/top/bottom) depend on how your displays are arranged in:
+
+**System Settings → Displays → Arrangement**
+
+Example arrangements:
+
+### Horizontal Layout
+```
+┌────────┐  ┌────────┐  ┌────────┐
+│Screen 1│  │Screen 2│  │Screen 3│
+└────────┘  └────────┘  └────────┘
+   Left     Current      Right
+```
+
+### L-Shaped Layout
+```
+            ┌────────┐
+            │Screen 2│ Top
+            └────────┘
+┌────────┐  ┌────────┐
+│Screen 1│  │Screen 3│
+└────────┘  └────────┘
+   Left     Current
+```
+
+### Vertical Stack
+```
+    ┌────────┐
+    │Screen 1│ Top
+    └────────┘
+    ┌────────┐
+    │Screen 2│ Current
+    └────────┘
+    ┌────────┐
+    │Screen 3│ Bottom
+    └────────┘
+```
+
+## Window Positioning Behavior
+
+When moving windows between screens:
+
+1. **Size Preservation:** Window maintains its current size (unless it exceeds the target screen dimensions)
+2. **Relative Position:** Window attempts to maintain its relative position on the target screen
+3. **Screen Bounds:** If window is larger than target screen, it's resized to fit
+4. **No Overlap:** Window is adjusted to stay within target screen bounds
+
+## Radial Menu
+
+Screen switching actions appear in the radial menu but don't have specific directional angles (line 102):
+
+```swift
+var hasRadialMenuAngle: Bool {
+    // ... returns false for willChangeScreen actions
+    return !(... || willChangeScreen || ...)
+}
+```
+
+They typically appear as menu options rather than directional triggers.
+
+## Combining with Positioning
+
+Screen switching can be combined with positioning actions:
+
+```bash
+# Move to right screen AND position on left half
+open "loop://RightScreen"
+open "loop://LeftHalf"
+
+# Move to next screen AND maximize
+open "loop://NextScreen"
+open "loop://Maximize"
+```
+
+<Note>
+  The screen switching action moves the window first, then apply positioning actions to arrange it on the target display.
+</Note>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Screen switching has no effect">
+    - Verify multiple displays are connected and active
+    - Check display arrangement in System Settings → Displays
+    - Ensure displays are in the expected physical positions
+  </Accordion>
+  
+  <Accordion title="Window appears in wrong location on target screen">
+    - Check your display arrangement configuration
+    - Verify which display is set as the primary/main display
+    - Different resolution screens may affect relative positioning
+  </Accordion>
+  
+  <Accordion title="Directional navigation doesn't match physical layout">
+    - Open System Settings → Displays → Arrangement
+    - Drag display icons to match your physical monitor positions
+    - Click "Arrange" to update the configuration
+  </Accordion>
+</AccordionGroup>
+
+## Related Actions
+
+<CardGroup cols={2}>
+  <Card title="General Actions" href="/api/general-actions">
+    Combine with maximize or center after moving screens
+  </Card>
+  
+  <Card title="Halves & Quarters" href="/api/halves-quarters">
+    Position windows after screen switching
+  </Card>
+  
+  <Card title="WindowDirection Overview" href="/api/window-directions">
+    Complete action reference
+  </Card>
+</CardGroup>

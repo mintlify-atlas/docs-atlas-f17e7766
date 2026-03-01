@@ -1,0 +1,173 @@
+---
+title: Radial Menu
+description: Use your mouse or trackpad to manipulate windows with Loop's intuitive radial menu interface
+icon: circle-dot
+---
+
+## Overview
+
+The Radial Menu is Loop's signature visual interface that allows you to manipulate windows using your mouse or trackpad. By holding down the trigger key and moving your cursor in the desired direction, you can quickly resize and reposition windows without memorizing complex keyboard shortcuts.
+
+<video controls src="https://github.com/user-attachments/assets/658f7043-79a1-4690-83b6-a714fe6245c8" />
+
+## How It Works
+
+The radial menu appears at your cursor position (or screen center, if configured) when you hold down the trigger key. As you move your cursor, the menu highlights the corresponding window action based on the direction and distance from the center.
+
+### Basic Usage
+
+<Steps>
+  <Step title="Hold the trigger key">
+    Press and hold your configured trigger key (set in Settings > Keybinds)
+  </Step>
+  
+  <Step title="Move your cursor">
+    Move your mouse or trackpad in the direction you want to resize the window
+  </Step>
+  
+  <Step title="Release to apply">
+    Release the trigger key to apply the selected window action
+  </Step>
+</Steps>
+
+### Direction Mapping
+
+The radial menu intelligently maps cursor directions to window actions:
+
+- **Cardinal directions**: Left, Right, Top, Bottom for halves
+- **Diagonal movements**: Corners for quarters  
+- **Outward from center**: Maximize/fullscreen actions
+- **Custom positions**: User-defined actions can be placed at specific angles
+
+## Implementation Details
+
+The radial menu is implemented in the `RadialMenuController` class, which creates a borderless, non-activating panel that floats above all windows:
+
+```swift Loop/Window Action Indicators/Radial Menu/RadialMenuController.swift
+func open(context: ResizeContext) {
+    let panel = ActivePanel(
+        contentRect: .zero,
+        styleMask: [.borderless, .nonactivatingPanel],
+        backing: .buffered,
+        defer: true
+    )
+    
+    panel.ignoresMouseEvents = true
+    panel.collectionBehavior = .canJoinAllSpaces
+    panel.level = .screenSaver
+}
+```
+
+### Positioning Modes
+
+The radial menu can be positioned in two ways:
+
+<CodeGroup>
+```swift Cursor Position (Default)
+if Defaults[.lockRadialMenuToCenter], let screen = NSScreen.main {
+    // Position at cursor
+    panel.setFrameOrigin(
+        NSPoint(
+            x: mouseX - windowSize / 2,
+            y: mouseY - windowSize / 2
+        )
+    )
+}
+```
+
+```swift Screen Center
+if Defaults[.lockRadialMenuToCenter], let screen = NSScreen.main {
+    // Position at screen center
+    let screenFrame = screen.frame
+    panel.setFrameOrigin(
+        NSPoint(
+            x: screenFrame.midX - windowSize / 2,
+            y: screenFrame.midY - windowSize / 2
+        )
+    )
+}
+```
+</CodeGroup>
+
+## Configuration Options
+
+### Visual Customization
+
+Navigate to **Settings > Theming > Radial Menu** to customize the appearance:
+
+<ParamField path="Radial menu" type="toggle" default="enabled">
+  Enable or disable the radial menu visualization. When disabled, you can still use cursor directions, but without the visual indicator.
+</ParamField>
+
+<ParamField path="Corner radius" type="number" default="40">
+  Adjust the roundness of the radial menu segments (30-50 pixels)
+</ParamField>
+
+<ParamField path="Thickness" type="number" default="20">
+  Control the thickness of the radial menu ring (10-35 pixels)
+</ParamField>
+
+### Action Customization
+
+You can customize which actions appear in the radial menu:
+
+<Steps>
+  <Step title="Enable customization">
+    In Settings > Theming > Radial Menu, enable custom actions
+  </Step>
+  
+  <Step title="Add actions">
+    Click "Add" to insert new radial menu actions
+  </Step>
+  
+  <Step title="Configure direction">
+    Set the direction and position for each action
+  </Step>
+  
+  <Step title="Reorder">
+    Drag actions to change their priority and arrangement
+  </Step>
+</Steps>
+
+<Note>
+  Left-click on cycle actions in the radial menu to step through the cycle items sequentially.
+</Note>
+
+## Advanced Features
+
+### Independent Cursor Interaction
+
+The radial menu and cursor interaction can be toggled independently:
+
+- **Radial menu only**: Visual feedback without cursor-based triggering
+- **Cursor interaction only**: Invisible directional controls
+- **Both enabled**: Full visual and interactive experience
+
+This flexibility allows you to customize Loop to match your workflow preferences.
+
+### Multi-Screen Support
+
+The radial menu automatically adjusts to work across multiple displays:
+
+```swift
+panel.collectionBehavior = .canJoinAllSpaces
+```
+
+This ensures the menu appears correctly regardless of which screen or space you're working in.
+
+<Warning>
+  The radial menu requires accessibility permissions to function. Make sure Loop has the necessary permissions in System Settings > Privacy & Security > Accessibility.
+</Warning>
+
+## Disabling the Radial Menu
+
+If you prefer keyboard-only workflows, you can completely disable the radial menu:
+
+1. Open Settings > Theming > Radial Menu
+2. Toggle off "Radial menu"
+3. The visual indicator will disappear, but keyboard shortcuts will continue to work
+
+This is useful for users who:
+- Prefer minimal visual distractions
+- Use Loop exclusively with keyboard shortcuts
+- Want to reduce system resource usage

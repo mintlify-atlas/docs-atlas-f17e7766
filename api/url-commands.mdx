@@ -1,0 +1,433 @@
+---
+title: 'URL Scheme API'
+description: 'Complete reference for Loop URL scheme commands for automation'
+---
+
+## Overview
+
+Loop supports URL scheme commands for window management and automation. All commands use the base format:
+
+```
+loop://<command>/<parameters>
+```
+
+<Note>
+  All commands are case-insensitive and operate on the frontmost non-terminal window.
+</Note>
+
+## Base URL Format
+
+<ParamField path="scheme" type="string" required>
+  Must be `loop`
+</ParamField>
+
+<ParamField path="command" type="string" required>
+  The command type: `direction`, `screen`, `action`, `keybind`, or `list`
+</ParamField>
+
+<ParamField path="parameters" type="string">
+  Command-specific parameters (varies by command type)
+</ParamField>
+
+---
+
+## Direction Commands
+
+Move or resize windows using directional commands.
+
+### Endpoint
+
+```
+loop://direction/<direction>
+```
+
+### Parameters
+
+<ParamField path="direction" type="string" required>
+  The direction to move or resize the window. Supports both short and full names.
+  
+  **Basic directions:**
+  - `left` - Move window to left half
+  - `right` - Move window to right half
+  - `top` - Move window to top half
+  - `bottom` - Move window to bottom half
+  - `maximize` - Maximize window
+  - `center` - Center window
+  
+  **Full names:** Any value from WindowDirection enum (e.g., `leftHalf`, `rightHalf`, `topHalf`, `bottomHalf`)
+</ParamField>
+
+### Examples
+
+```bash
+# Basic directions
+open "loop://direction/left"
+open "loop://direction/right"
+open "loop://direction/top"
+open "loop://direction/bottom"
+
+# Full names
+open "loop://direction/maximize"
+open "loop://direction/center"
+```
+
+### Response
+
+<ResponseField name="success" type="void">
+  Window is moved/resized to the specified direction. No return value.
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="error" type="string">
+  Returns error message to console/log:
+  
+  - `"No direction specified"` - Missing direction parameter
+  - `"Invalid direction: <value>"` - Unknown direction value
+  - `"No suitable windows or screen found"` - No eligible window to operate on
+</ResponseField>
+
+---
+
+## Screen Commands
+
+Move windows between multiple displays.
+
+### Endpoint
+
+```
+loop://screen/<command>
+```
+
+### Parameters
+
+<ParamField path="command" type="string" required>
+  Screen movement command:
+  - `next` - Move window to next screen
+  - `previous` - Move window to previous screen
+</ParamField>
+
+### Examples
+
+```bash
+# Move to next screen
+open "loop://screen/next"
+
+# Move to previous screen
+open "loop://screen/previous"
+```
+
+### Response
+
+<ResponseField name="success" type="void">
+  Window is moved to the target screen. No return value.
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="error" type="string">
+  Returns error message to console/log:
+  
+  - `"No screen command or window"` - Missing parameter or no active window
+  - `"Failed to find target screen"` - No available screen in requested direction
+</ResponseField>
+
+---
+
+## Action Commands
+
+Execute predefined window actions or custom actions.
+
+### Endpoint
+
+```
+loop://action/<action>
+```
+
+### Parameters
+
+<ParamField path="action" type="string" required>
+  The action to execute. Can be:
+  
+  **Predefined actions:**
+  - Any WindowDirection value (e.g., `maximize`, `leftHalf`, `rightHalf`)
+  - See `loop://list/actions` for complete list
+  
+  **Custom actions:**
+  - Any custom action name you've defined in Loop settings
+  - Custom action names are case-insensitive
+  
+  **Stash actions:**
+  - Any stash action name you've defined
+</ParamField>
+
+### Examples
+
+```bash
+# Predefined actions
+open "loop://action/maximize"
+open "loop://action/leftHalf"
+open "loop://action/center"
+
+# Custom actions (if defined)
+open "loop://action/myCustomLayout"
+
+# List all available actions
+open "loop://action/list"
+```
+
+### Response
+
+<ResponseField name="success" type="void">
+  Action is executed on the target window. No return value.
+</ResponseField>
+
+<ResponseField name="list" type="file">
+  When using `loop://action/list`, opens a temporary text file with categorized actions:
+  
+  - Custom Actions
+  - Stash Actions
+  - General Actions
+  - Halves
+  - Quarters
+  - Horizontal Thirds
+  - Vertical Thirds
+  - Screen Switching
+  - Size Adjustment
+  - Shrink
+  - Grow
+  - Move
+  - Other
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="error" type="string">
+  Returns error message to console/log:
+  
+  - `"Invalid action: <value>"` - Unknown action name
+  - `"Could not find a suitable window to apply the custom action"` - No eligible window
+</ResponseField>
+
+---
+
+## Keybind Commands
+
+Execute custom keybind actions by name.
+
+### Endpoint
+
+```
+loop://keybind/<name>
+```
+
+### Parameters
+
+<ParamField path="name" type="string" required>
+  The name of the custom keybind to execute. Must match a keybind name defined in Loop settings.
+  
+  - Names are case-insensitive
+  - Use `loop://keybind/list` or `loop://list/keybinds` to see available keybinds
+</ParamField>
+
+### Examples
+
+```bash
+# Execute custom keybind
+open "loop://keybind/myCustomLayout"
+
+# List all keybinds
+open "loop://keybind/list"
+```
+
+### Response
+
+<ResponseField name="success" type="void">
+  Keybind is executed on the target window. No return value.
+</ResponseField>
+
+<ResponseField name="list" type="array">
+  When using `loop://keybind/list`, prints available keybind names to console.
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="error" type="string">
+  Returns error message to console/log:
+  
+  - `"No keybind specified"` - Missing name parameter
+  - `"Keybind not found: <name>"` - No keybind with that name exists
+</ResponseField>
+
+---
+
+## List Commands
+
+View available commands, actions, and keybinds.
+
+### Endpoint
+
+```
+loop://list/<type>
+```
+
+### Parameters
+
+<ParamField path="type" type="string" default="all">
+  The type of items to list:
+  - `actions` - List all window actions (predefined and custom)
+  - `keybinds` - List all custom keybinds
+  - `all` - List all commands, actions, and keybinds
+</ParamField>
+
+### Examples
+
+```bash
+# List all actions
+open "loop://list/actions"
+
+# List all keybinds
+open "loop://list/keybinds"
+
+# List everything
+open "loop://list/all"
+```
+
+### Response
+
+<ResponseField name="output" type="file">
+  Opens a temporary text file (auto-deleted after 60 seconds) containing:
+</ResponseField>
+
+**For `loop://list/actions`:**
+- Custom Actions (if any defined)
+- Stash Actions (if any defined)
+- General Actions
+- Halves (leftHalf, rightHalf, topHalf, bottomHalf)
+- Quarters (topLeft, topRight, bottomLeft, bottomRight)
+- Horizontal Thirds
+- Vertical Thirds
+- Screen Switching (nextScreen, previousScreen)
+- Size Adjustment
+- Shrink
+- Grow
+- Move
+- Other
+
+**For `loop://list/keybinds`:**
+- All named custom keybinds with their URL format
+
+**For `loop://list/all`:**
+- All direction commands
+- All screen commands
+- All actions (custom and predefined)
+- All keybind commands
+- All list commands
+
+---
+
+## Error Handling
+
+### Invalid Scheme
+
+If the URL scheme is not `loop://`, returns:
+
+```
+Invalid scheme: <scheme>
+Required format: loop://<command>/<parameters>
+```
+
+### Invalid Command
+
+If the command is not recognized, returns:
+
+```
+Invalid command: <command>
+Available commands: direction, screen, action, keybind, list
+```
+
+### Missing Parameters
+
+Each command type provides specific guidance when parameters are missing. For example:
+
+```bash
+# Missing direction
+open "loop://direction"
+# Returns: No direction specified
+# Available directions: left, right, top, bottom, ...
+```
+
+---
+
+## Window Selection
+
+Loop automatically selects the target window using this priority:
+
+1. **User-defined target** - Window selected via Loop's target window mechanism
+2. **Last active window** - Window that was active within the last 5 seconds
+3. **Frontmost window** - First eligible window in the window list
+
+### Eligible Windows
+
+Windows must meet these criteria:
+- Not the Loop application itself
+- Regular activation policy (not background-only apps)
+- Visible (not hidden or minimized)
+
+---
+
+## Usage Tips
+
+<Tip>
+  - All commands are case-insensitive
+  - Parameters with spaces must be URL-encoded
+  - Use list commands to discover available options dynamically
+  - Commands can be executed from Terminal, AppleScript, or any automation tool
+</Tip>
+
+<Warning>
+  Window commands operate on the frontmost non-terminal window. Ensure the target window is active before executing commands for predictable results.
+</Warning>
+
+## Integration Examples
+
+### Shell Script
+
+```bash
+#!/bin/bash
+# Move window right and then maximize
+open "loop://direction/right"
+sleep 0.5
+open "loop://action/maximize"
+```
+
+### Keyboard Maestro
+
+```
+Execute Shell Script:
+  open "loop://action/leftHalf"
+```
+
+### Alfred Workflow
+
+```
+open "loop://action/{query}"
+```
+
+### Hammerspoon
+
+```lua
+os.execute('open "loop://direction/left"')
+```
+
+---
+
+## Command Reference Table
+
+| Command | Format | Description |
+|---------|--------|-------------|
+| Direction | `loop://direction/<direction>` | Move/resize window |
+| Screen | `loop://screen/<next\|previous>` | Move between displays |
+| Action | `loop://action/<action>` | Execute predefined or custom action |
+| Keybind | `loop://keybind/<name>` | Execute named keybind |
+| List | `loop://list/<type>` | View available commands |

@@ -1,0 +1,319 @@
+---
+title: Keyboard Shortcuts
+description: Assign custom keyboard shortcuts to perform window actions instantly
+icon: keyboard
+---
+
+## Overview
+
+Loop's keyboard shortcut system allows you to assign any key combination (using the trigger key) to initiate window manipulation actions. This provides a fast, precise alternative to the radial menu for users who prefer keyboard-driven workflows.
+
+<video controls src="https://github.com/user-attachments/assets/d865329f-0533-4eeb-829d-9aa6159f454b" />
+
+## How Keyboard Shortcuts Work
+
+Loop uses a **trigger key** system. The trigger key acts as a modifier that must be held (or pressed) in combination with other keys to activate window actions.
+
+### Basic Workflow
+
+<Steps>
+  <Step title="Set your trigger key">
+    Configure your trigger key in Settings > Keybinds (e.g., Control, Option, or Caps Lock)
+  </Step>
+  
+  <Step title="Create a keybind">
+    Add a new keybind and assign it an action (e.g., Trigger + H for left half)
+  </Step>
+  
+  <Step title="Use the shortcut">
+    Hold the trigger key and press your assigned key to execute the action
+  </Step>
+</Steps>
+
+<Note>
+  To use Caps Lock as your trigger key, you'll need to remap it to Control in System Settings > Keyboard > Modifier Keys, then select Right Control in Loop.
+</Note>
+
+## Available Actions
+
+Loop provides an extensive collection of window actions organized by category:
+
+### General
+
+<CardGroup cols={2}>
+  <Card title="Fullscreen" icon="maximize">
+    Enter native macOS fullscreen mode
+  </Card>
+  <Card title="Maximize" icon="expand">
+    Fill the entire screen (without fullscreen mode)
+  </Card>
+  <Card title="Almost Maximize" icon="expand">
+    Maximize with a small margin around edges
+  </Card>
+  <Card title="Centre" icon="circle-dot">
+    Center the window on screen
+  </Card>
+  <Card title="MacOS Centre" icon="circle-dot">
+    Use macOS native window centering
+  </Card>
+  <Card title="Minimize" icon="window-minimize">
+    Minimize window to dock
+  </Card>
+  <Card title="Hide" icon="eye-slash">
+    Hide the application
+  </Card>
+</CardGroup>
+
+### Halves
+
+Position windows to fill half of the screen:
+
+- **Top Half**: Upper half of screen
+- **Bottom Half**: Lower half of screen  
+- **Left Half**: Left half of screen
+- **Right Half**: Right half of screen
+
+### Quarters
+
+Position windows in screen corners:
+
+- **Top Left Quarter**
+- **Top Right Quarter**
+- **Bottom Left Quarter**
+- **Bottom Right Quarter**
+
+### Thirds
+
+**Horizontal Thirds:**
+- Left Third, Left Two Thirds
+- Horizontal Center Third
+- Right Third, Right Two Thirds
+
+**Vertical Thirds:**
+- Top Third, Top Two Thirds
+- Vertical Center Third
+- Bottom Third, Bottom Two Thirds
+
+### Screen Switching
+
+Move windows between displays:
+
+- **Next Screen** / **Previous Screen**: Cycle through displays
+- **Left/Right/Top/Bottom Screen**: Move to specific adjacent screen
+
+### Window Manipulation
+
+**Size Adjustment:**
+- Larger, Smaller: Resize proportionally
+- Scale Up, Scale Down: Alternative sizing methods
+
+**Directional Shrink:**
+- Shrink Top, Bottom, Right, Left
+- Shrink Horizontal, Shrink Vertical
+
+**Directional Grow:**
+- Grow Top, Bottom, Right, Left
+- Grow Horizontal, Grow Vertical
+
+**Movement:**
+- Move Up, Down, Right, Left
+
+### Special Actions
+
+- **Initial Frame**: Restore window to its original position
+- **Undo**: Revert to previous window state
+- **Custom**: Create custom window sizes and positions
+- **Cycle**: Define action sequences (see [Cycles](/features/cycles))
+
+## Configuration
+
+### Adding Keybinds
+
+Navigate to **Settings > Keybinds** and follow these steps:
+
+<Steps>
+  <Step title="Click 'Add'">
+    Create a new keybind entry
+  </Step>
+  
+  <Step title="Select an action">
+    Choose from the dropdown menu of available actions
+  </Step>
+  
+  <Step title="Record your shortcut">
+    Click the keybind field and press your desired key (the trigger key is automatically included)
+  </Step>
+  
+  <Step title="Name it (optional)">
+    Give your keybind a custom name for easy reference
+  </Step>
+</Steps>
+
+### Trigger Key Options
+
+<ParamField path="Trigger Key" type="key combination" required>
+  The base modifier key(s) that activate Loop. Can be a single key or combination.
+</ParamField>
+
+<ParamField path="Treat left and right keys differently" type="toggle" default="false">
+  When enabled, Left Control and Right Control are treated as distinct trigger keys.
+</ParamField>
+
+<ParamField path="Trigger delay" type="number" default="0" unit="seconds">
+  Delay before Loop activates (0-1 seconds). Useful to avoid accidental triggers.
+</ParamField>
+
+<ParamField path="Double-click to trigger" type="toggle" default="false">
+  Require double-tapping the trigger key to activate Loop.
+</ParamField>
+
+<ParamField path="Middle-click to trigger" type="toggle" default="false">
+  Use middle mouse button to trigger Loop.
+</ParamField>
+
+## Implementation Details
+
+Keyboard shortcuts are monitored by the `KeybindTrigger` class using an active event monitor:
+
+```swift Loop/Core/Observers/KeybindTrigger.swift
+final class KeybindTrigger {
+    private var eventMonitor: ActiveEventMonitor?
+    
+    func start() async {
+        let eventMonitor = ActiveEventMonitor(
+            events: [.keyDown, .keyUp, .flagsChanged]
+        ) { [weak self] event -> ActiveEventMonitor.EventHandling in
+            // Process keybind events
+            let result = self?.performKeybind(
+                type: event.type,
+                isARepeat: event.getIntegerValueField(.keyboardEventAutorepeat) == 1,
+                flags: filteredFlags,
+                isLoopOpen: isLoopOpen
+            )
+            
+            return result == .consume ? .ignore : .forward
+        }
+        eventMonitor.start()
+    }
+}
+```
+
+### Keybind Resolution
+
+Loop uses a multi-tier keybind resolution system:
+
+<Steps>
+  <Step title="Check for exact match">
+    Loop first checks if the pressed keys exactly match a configured keybind
+  </Step>
+  
+  <Step title="Check bypassed actions">
+    If no match, check for actions that bypass the trigger key requirement
+  </Step>
+  
+  <Step title="Open radial menu">
+    If only the trigger key is pressed, open the radial menu for cursor-based selection
+  </Step>
+</Steps>
+
+### Event Handling
+
+The keybind system intelligently handles edge cases:
+
+```swift
+// Prevent conflicts with system shortcuts
+refreshSystemKeybindCacheIfNeeded()
+if result != .opening, 
+   event.type == .keyDown, 
+   systemKeybindCache.contains(pressedKeys) {
+    closeLoop(forceClose: true)
+}
+```
+
+<Warning>
+  Loop automatically closes when system shortcuts (like screenshot commands) are detected to prevent conflicts.
+</Warning>
+
+## Bypassing the Trigger Key
+
+Some actions can be configured to bypass the trigger key requirement:
+
+```swift
+init(
+    _ direction: WindowDirection,
+    keybind: Set<CGKeyCode>,
+    bypassTriggerKey: Bool? = nil
+) {
+    self.bypassTriggerKey = bypassTriggerKey
+    // ...
+}
+```
+
+This allows you to create direct keyboard shortcuts without needing to hold the trigger key.
+
+## Repeatable Actions
+
+Certain actions automatically repeat when you hold down the keys:
+
+```swift
+var canRepeat: Bool {
+    willManipulateExistingWindowFrame || 
+    direction.willFocusWindow || 
+    direction == .undo
+}
+```
+
+Repeatable actions include:
+- Window resizing (grow, shrink, larger, smaller)
+- Window movement (move up, down, left, right)
+- Focus switching
+- Undo
+
+## URL Scheme Integration
+
+You can trigger Loop actions programmatically using URL schemes:
+
+```bash Shell Commands
+# Trigger specific directions
+open "loop://direction/right"     # Move to right half
+open "loop://direction/left"      # Move to left half
+
+# Execute window actions
+open "loop://action/maximize"     # Maximize window
+open "loop://screen/next"         # Move to next screen
+
+# List available commands
+open "loop://list/all"            # All commands
+open "loop://list/actions"        # Window actions only
+open "loop://list/keybinds"       # Custom keybinds
+```
+
+```applescript AppleScript
+-- AppleScript examples
+tell application "Loop" to activate
+open location "loop://direction/left"
+```
+
+<Tip>
+  You can create shell scripts that chain multiple Loop actions together for complex window arrangements.
+</Tip>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Choose memorable keybinds">
+    Use mnemonic associations: H for left Half, L for right (like vim), M for Maximize, etc.
+  </Accordion>
+  
+  <Accordion title="Avoid conflicts">
+    Don't override important system shortcuts or application-specific commands.
+  </Accordion>
+  
+  <Accordion title="Start simple">
+    Begin with a few essential shortcuts (halves, maximize, center) and expand gradually.
+  </Accordion>
+  
+  <Accordion title="Use cycles for variations">
+    Instead of memorizing many shortcuts, use cycles to group related actions under one keybind.
+  </Accordion>
+</AccordionGroup>
